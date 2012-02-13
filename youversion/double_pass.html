@@ -1,0 +1,1756 @@
+<!-- WORK STATION (THE FIRST STATION WHERE THE TURKERS FILL IN THE TIMESTAMPS FOR THE VERSES) -->
+
+<link href='http://fonts.googleapis.com/css?family=Original+Surfer' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+<script type="text/javascript" src="http://youversion.s3.amazonaws.com/jquery.unobtrusive.ajax.js"></script>
+<script src="http://www.jplayer.org/latest/js/jquery.jplayer.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="http://cloudfactory-transcription.s3.amazonaws.com/javascripts/jquery.hotkeys.js"></script>
+<script src="http://youversion.s3.amazonaws.com/lightbox.js" type="text/javascript"></script>
+
+<div id="overlay"></div>
+
+<div id = "instruction_text" style="display:none">
+  <h2>Instructions</h2>
+  <p><b>Click on the heart icon immediately after the audio plays the word before it.</b></p>
+  <p>Be as precise as possible. If you think you clicked a heart mistakenly, click the corresponding section to start the audio from the same position.</p>
+  <p>When all hearts are clicked on, <b>press "I'm Done!"</b> button to submit your task.</p>
+  <p><b>Hot keys:</b></p>
+  <p>CLick heart => Enter</p>
+  <p>Play/pause => p</p>
+</div>
+<div id = "wrapper">
+  <div id = "trascription_area" class="all_rounded_corners">
+    <div style="color:#fff;font-size:20px">Play the audio and click on the red heart icon when the audio reaches the word right before it. <a id='show_instruction' href="#instruction_text" rel="facebox"><img src='http://youversion.s3.amazonaws.com/help.png' alt='View instructions' style='margin-bottom: -8px;' /></a></div>
+
+    <div id="edit_mode_message"><span></span></div>
+    <form id ="youversion_form">
+      <input type='hidden' value='' id='timecodes_to_submit' name='output[time_codes]'>
+      <div id = "bible_chapter" style="overflow:scroll;background:#fff">
+
+      </div>
+      <input type = "submit" id = "submit_button" value = "I'm Done!" class='disable' disabled='disabled' />
+      <input type = "button" id = "step_back" value = 'One Step Back' class='btn-blue' style="float: right;" />
+      <input type = "reset" id = "reset_form" value = 'Try Again' class='btn-blue' style="float: right;" />
+    </form>
+
+    <span id= "current_progress">Remaining <span id='countdown'></span></span>
+    <div id="progress" style="border:1px solid;"><span id ="bar"></span></div>
+  </div>
+
+  <div id = "player_container">
+    <div id="jquery_jplayer"></div>
+    <div id="jp_container_1" class="jp-audio">
+      <div class="jp-type-single">
+        <div id="jp_interface_1" class="jp-interface all_rounded_corners">
+          <ul class="jp-controls">
+            <li><a href="#" class="jp-play pp" tabindex="1">play</a></li>
+            <li><a href="#" class="jp-pause pp" tabindex="1">pause</a></li>
+            <li><a href="#" class="jp-previous traverse" tabindex="1">Previous</a></li>
+          </ul>
+          <div class="jp-progress" style = "display:none;">
+            <div class="jp-seek-bar">
+              <div class="jp-play-bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id='warning_container' style = "display:none"></div>
+  <div id="fade"></div>
+</div>
+  <!-- stylesheets -->
+  <style>
+    body {
+      margin: 0;
+    }
+    .logo, .logo a {
+      float: left;
+      height: 60px;
+      margin: 0;
+      position: absolute;
+      width: 315px;
+      z-index: 2000000;
+    }
+    .logo a {
+      background: url("http://cloudfactory.com/assets/logo.png") repeat scroll 0 0 transparent;
+      display: block;
+      text-indent: -9999px;
+    }
+    #wrapper {
+      margin: auto auto 20px;
+      width: 815px;
+    }
+    #player_container {
+      margin: 10px 0;
+      width: 787px;
+      float: left;
+    }
+    #hotkey_help {
+      background-color: #F7FBFD;
+      border: 1px solid #C1D5E2;
+      color: #577589;
+      float: left;
+      font-size: 11px;
+      font-style: italic;
+      margin-top: 45px;
+      padding: 10px;
+    }
+    #trascription_area {
+      background-color: #29445E;
+      border: 2px solid #C1D5E2;
+      float: left;
+      padding: 10px;
+      position: relative;
+      width: 790px;
+    }
+
+    .jp-volume-control {
+
+    }
+
+    div.jp-volume-control ul {
+      list-style-type:none;
+      padding:0;
+      margin: 0;
+    }
+    div.jp-volume-control ul li {
+      display:inline;
+    }
+    div.jp-volume-control ul a {
+      position: absolute;
+      overflow:hidden;
+      text-indent:-9999px;
+    }
+
+    div.jp-volume-control a.jp-mute,
+    div.jp-volume-control a.jp-unmute {
+      top:42px !important;
+      left:687px!important;
+    }
+    div.jp-volume-control a.jp-mute,
+    div.jp-volume-control a.jp-unmute {
+      top:42px!important;
+      left:687px!important;
+    }
+
+    #bible_chapter, .transcribed-text {
+      border: 2px solid #AAAAAA;
+      font-family: Georgia,Times,serif;
+      font-size: 16px;
+      height: 315px;
+      line-height: 20px;
+      padding: 12px 5px;
+      width: 732px;
+    }
+
+
+    .all_rounded_corners {
+      -moz-border-radius: 10px;
+      -webkit-border-radius: 10px;
+      -khtml-border-radius: 10px;
+      border-radius: 10px;
+    }
+    .bottom_rounded_corners {
+      -moz-border-radius-bottomright: 10px;
+      -moz-border-radius-bottomleft: 10px;
+      -webkit-border-bottom-right-radius: 10px;
+      -webkit-border-bottom-left-radius: 10px;
+    }
+    .right_rounded_corners {
+      -moz-border-radius-topright: 10px;
+      -moz-border-radius-bottomright: 10px;
+
+      -webkit-border-top-right-radius: 10px;
+      -webkit-border-bottom-right-radius: 10px;
+    }
+
+    #overlay {
+      z-index: 10000;
+      filter: alpha(opacity=10); /*older IE*/
+      filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50); /* IE */
+      -moz-opacity: .10; /*older Mozilla*/
+      -khtml-opacity: 0.1;   /*older Safari*/
+      opacity: 0.1;   /*supported by current Mozilla, Safari, and Opera*/
+      background-color:#000000;
+      position:fixed; top:0px; left:0px; width:100%; height:100%; text-align:center; vertical-align:middle;
+      display:none;
+    }
+    .transcribed-text {
+      background-color: #fff;
+    }
+
+    #current_progress {
+      color: #fff;
+      position: absolute;
+      right: 13px;
+      top: 42px;
+    }
+
+    #current_progress b{
+      font-size: 20px;
+      padding-left: 10px;
+    }
+
+
+    /*
+    * Skin for jPlayer Plugin (jQuery JavaScript Library)
+    * http://www.happyworm.com/jquery/jplayer
+    *
+    * Skin Name: Blue Monday
+    *
+    * Copyright (c) 2010 Happyworm Ltd
+    * Dual licensed under the MIT and GPL licenses.
+    *  - http://www.opensource.org/licenses/mit-license.php
+    *  - http://www.gnu.org/copyleft/gpl.html
+    *
+    * Author: Silvia Benvenuti
+    * Skin Version: 3.0 (jPlayer 2.0.0)
+    * Date: 20th December 2010
+    */
+
+    div.jp-audio,
+    div.jp-video {
+
+      /* Edit the font-size to counteract inherited font sizing.
+      * Eg. 1.25em = 1 / 0.8em
+      */
+
+      font-size:1em; /* No parent CSS that can effect the size in these demos */
+
+      font-family:Verdana, Arial, sans-serif;
+      line-height:1.6;
+      color: #666;
+    }
+    div.jp-audio {
+      width:786px;
+    }
+    div.jp-video-270p {
+      width:480px;
+    }
+    div.jp-video-360p {
+      width:640px;
+    }
+    div.jp-interface {
+      bottom: 103px;
+      position: relative;
+      width: 755px;
+    }
+    div.jp-audio div.jp-type-single div.jp-interface {
+    }
+    div.jp-audio div.jp-type-playlist div.jp-interface {
+      height:80px;
+    }
+    div.jp-video div.jp-type-single div.jp-interface {
+      height:60px;
+      border-bottom:none;
+    }
+    div.jp-video div.jp-type-playlist div.jp-interface {
+      height:60px;
+    }
+    div.jp-interface ul.jp-controls {
+      list-style-type:none;
+      padding:0;
+      margin: 0;
+    }
+    /*    div.jp-interface ul.jp-controls li {
+          display:inline;
+        }*/
+    div.jp-interface ul.jp-controls a {
+      position: absolute;
+      overflow:hidden;
+      text-indent:-9999px;
+    }
+    a.jp-play,
+    a.jp-pause {
+      width:40px;
+      height:40px;
+      z-index:1;
+    }
+    div.jp-audio div.jp-type-single a.jp-play,
+    div.jp-audio div.jp-type-single a.jp-pause {
+      left: 45%;
+      top: 35px;
+    }
+    div.jp-audio div.jp-type-playlist a.jp-play,
+    div.jp-audio div.jp-type-playlist a.jp-pause {
+      top:29px;
+      left:48px;
+    }
+    div.jp-video a.jp-play,
+    div.jp-video a.jp-pause {
+      top:15px;
+    }
+    div.jp-video-270p div.jp-type-single a.jp-play,
+    div.jp-video-270p div.jp-type-single a.jp-pause {
+      left:195px;
+    }
+    div.jp-video-270p div.jp-type-playlist a.jp-play,
+    div.jp-video-270p div.jp-type-playlist a.jp-pause {
+      left:220px;
+    }
+    div.jp-video-360p div.jp-type-single a.jp-play,
+    div.jp-video-360p div.jp-type-single a.jp-pause {
+      left:275px;
+    }
+    div.jp-video-360p div.jp-type-playlist a.jp-play,
+    div.jp-video-360p div.jp-type-playlist a.jp-pause {
+      left:300px;
+    }
+    a.jp-play {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 0 no-repeat;
+    }
+    a.jp-play:hover {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -41px 0 no-repeat;
+    }
+    a.jp-pause {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -42px no-repeat;
+      display: none;
+    }
+    a.jp-pause:hover {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -41px -42px no-repeat;
+    }
+    div.jp-audio div.jp-type-single a.jp-stop {
+      top:36px;
+      left:100%;
+    }
+    div.jp-audio div.jp-type-playlist a.jp-stop {
+      top:26px;
+      left:126px;
+    }
+    div.jp-video a.jp-stop {
+      top:21px;
+    }
+    div.jp-video-270p div.jp-type-single a.jp-stop {
+      left:245px;
+    }
+    div.jp-video-270p div.jp-type-playlist a.jp-stop {
+      left:298px;
+    }
+    div.jp-video-360p div.jp-type-single a.jp-stop {
+      left:325px;
+    }
+    div.jp-video-360p div.jp-type-playlist a.jp-stop {
+      left:378px;
+    }
+    a.jp-stop {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -83px no-repeat;
+      width:28px;
+      height:28px;
+      z-index:1;
+    }
+    a.jp-stop:hover {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -29px -83px no-repeat;
+    }
+    div.jp-audio div.jp-type-playlist a.jp-previous {
+      left:20px;
+      top:26px;
+    }
+    div.jp-video div.jp-type-playlist a.jp-previous {
+      top:21px;
+    }
+    div.jp-video-270p div.jp-type-playlist a.jp-previous {
+      left:192px;
+    }
+    div.jp-video-360p div.jp-type-playlist a.jp-previous {
+      left:272px;
+    }
+    a.jp-previous {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") no-repeat scroll 0 -112px transparent;
+      height: 28px;
+      left: 300px;
+      top: 36px;
+      width: 28px;
+      display:none;
+    }
+    a.jp-previous:hover {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -29px -112px no-repeat;
+    }
+    div.jp-audio div.jp-type-playlist a.jp-next {
+      left:88px;
+      top:26px;
+    }
+    div.jp-video div.jp-type-playlist a.jp-next {
+      top:21px;
+    }
+    div.jp-video-270p div.jp-type-playlist a.jp-next {
+      left:260px;
+    }
+    div.jp-video-360p div.jp-type-playlist a.jp-next {
+      left:340px;
+    }
+    a.jp-next {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") no-repeat scroll 0 -141px transparent;
+      height: 28px;
+      left: 420px;
+      top: 36px;
+      width: 28px;
+      display:none;
+    }
+    a.jp-next:hover {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -29px -141px no-repeat;
+    }
+    div.jp-progress {
+      position: absolute;
+      overflow:hidden;
+      background-color: #ddd;
+    }
+    div.jp-audio div.jp-type-single div.jp-progress {
+      top:42px;
+      left:130px;
+      width:550px;
+      height:15px;
+    }
+    div.jp-audio div.jp-type-playlist div.jp-progress {
+      top:32px;
+      left:164px;
+      width:122px;
+      height:15px;
+    }
+    div.jp-video div.jp-progress {
+      top:0px;
+      left:0px;
+      width:100%;
+      height:10px;
+    }
+    div.jp-seek-bar {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -202px repeat-x;
+      width:0px;
+      height:100%;
+      cursor: pointer;
+    }
+    div.jp-play-bar {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -218px repeat-x ;
+      width:0px;
+      height:100%;
+    }
+
+    /* The seeking class is added/removed inside jPlayer */
+    div.jp-seeking-bg {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/pbar-ani.gif");
+    }
+
+    a.jp-mute,
+    a.jp-unmute {
+      width:18px;
+      height:15px;
+    }
+    div.jp-audio div.jp-type-single a.jp-mute,
+    div.jp-audio div.jp-type-single a.jp-unmute {
+      left: 325px !important;
+      top: 75px !important;
+    }
+    div.jp-audio div.jp-type-playlist a.jp-mute,
+    div.jp-audio div.jp-type-playlist a.jp-unmute {
+      top:32px;
+      left:296px;
+    }
+    div.jp-video a.jp-mute,
+    div.jp-video a.jp-unmute {
+      top:27px;
+    }
+    div.jp-video-270p div.jp-type-single a.jp-mute,
+    div.jp-video-270p div.jp-type-single a.jp-unmute {
+      left:304px;
+    }
+    div.jp-video-270p div.jp-type-playlist a.jp-unmute,
+    div.jp-video-270p div.jp-type-playlist a.jp-mute {
+      left:363px;
+    }
+    div.jp-video-360p div.jp-type-single a.jp-mute,
+    div.jp-video-360p div.jp-type-single a.jp-unmute {
+      left:384px;
+    }
+    div.jp-video-360p div.jp-type-playlist a.jp-mute,
+    div.jp-video-360p div.jp-type-playlist a.jp-unmute {
+      left:443px;
+    }
+    a.jp-mute {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -186px no-repeat;
+    }
+    a.jp-mute:hover {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -19px -170px no-repeat;
+    }
+    a.jp-unmute {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -170px no-repeat;
+      display: none;
+    }
+    a.jp-unmute:hover {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -19px -186px no-repeat;
+    }
+    div.jp-volume-bar {
+      position: absolute;
+      overflow:hidden;
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -250px repeat-x;
+      width:46px;
+      height:5px;
+      cursor: pointer;
+    }
+    div.jp-audio div.jp-type-single div.jp-volume-bar {
+      left: 360px;
+      top: 79px;
+    }
+    div.jp-audio div.jp-type-playlist div.jp-volume-bar {
+      top:37px;
+      left:324px;
+    }
+    div.jp-video div.jp-volume-bar {
+      top:32px;
+    }
+    div.jp-video-270p div.jp-type-single div.jp-volume-bar {
+      left:332px;
+    }
+    div.jp-video-270p div.jp-type-playlist div.jp-volume-bar {
+      left:391px;
+    }
+    div.jp-video-360p div.jp-type-single div.jp-volume-bar {
+      left:412px;
+    }
+    div.jp-video-360p div.jp-type-playlist div.jp-volume-bar {
+      left:471px;
+    }
+    div.jp-volume-bar-value {
+      background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -256px repeat-x;
+      width:0px;
+      height:5px;
+    }
+    div.jp-current-time,
+    div.jp-duration {
+      position: absolute;
+      font-size:.64em;
+      font-style:oblique;
+    }
+    div.jp-duration {
+      /*      text-align: right;*/
+    }
+    div.jp-audio div.jp-type-single div.jp-current-time,
+    div.jp-audio div.jp-type-single div.jp-duration {
+      top:57px;
+      left:347px;
+      width:550px;
+      color: white;
+    }
+
+    div.jp-audio div.jp-type-playlist div.jp-current-time,
+    div.jp-audio div.jp-type-playlist div.jp-duration {
+      top:49px;
+      left:164px;
+      width:122px;
+    }
+    div.jp-video div.jp-current-time,
+    div.jp-video div.jp-duration {
+      top:10px;
+      left:0px;
+      width:98%;
+      padding:0 1%;
+    }
+
+    div.jp-audio div.jp-current-time {
+      font-size: 2em;
+      left: 646px !important;
+      position: absolute;
+      top: -380px !important;
+    }
+    div.jp-playlist {
+      width:100%;
+      background-color:#ccc;
+      border:1px solid #C1D5E2;
+      border-top:none;
+    }
+    div.jp-playlist ul {
+      list-style-type:none;
+      margin:0;
+      padding:0 20px;
+      font-size:.72em;
+    }
+
+
+    div.jp-type-single div.jp-playlist li {
+      padding:5px 0 5px 20px;
+      font-weight:bold;
+    }
+    div.jp-type-playlist div.jp-playlist li {
+      padding:5px 0 4px 20px;
+      border-bottom:1px solid #eee;
+    }
+    /*
+    div.jp-video div.jp-playlist li {
+    padding:5px 0 5px 20px;
+    font-weight:bold;
+    }
+    */
+    div.jp-type-playlist div.jp-playlist li.jp-playlist-last {
+      padding:5px 0 5px 20px;
+      border-bottom:none;
+    }
+    div.jp-type-playlist div.jp-playlist li.jp-playlist-current {
+      list-style-type:square;
+      list-style-position:inside;
+      padding-left:8px;
+    }
+    div.jp-type-playlist div.jp-playlist a {
+      color: #666;
+      text-decoration: none;
+    }
+    div.jp-type-playlist div.jp-playlist a:hover {
+      color:#0d88c1;
+    }
+    div.jp-type-playlist div.jp-playlist a.jp-playlist-current {
+      color:#0d88c1;
+    }
+    div.jp-type-playlist div.jp-playlist div.jp-free-media {
+      display:inline;
+      margin-left:20px;
+    }
+
+    div.jp-video div.jp-video-play {
+      background: transparent url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.monday.video.play.png") no-repeat center;
+      /* position: relative; */
+      position: absolute;
+      cursor:pointer;
+      z-index:2;
+    }
+    div.jp-video div.jp-video-play:hover {
+      background: transparent url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.monday.video.play.hover.png") no-repeat center;
+    }
+    div.jp-video-270p div.jp-video-play {
+      top:-270px;
+      width:480px;
+      height:270px;
+    }
+    div.jp-video-360p div.jp-video-play {
+      top:-360px;
+      width:640px;
+      height:360px;
+    }
+
+    div.jp-jplayer {
+      width:0px;
+      height:0px;
+    }
+    div.jp-video div.jp-jplayer {
+      border:1px solid #C1D5E2;
+      border-bottom:none;
+      z-index:1;
+    }
+    div.jp-video-270p div.jp-jplayer {
+      width:480px;
+      height:270px;
+    }
+    div.jp-video-360p div.jp-jplayer {
+      width:640px;
+      height:360px;
+    }
+    div.jp-jplayer {
+      background-color: #000000;
+    }
+
+
+
+
+    /* AtD error styles */
+
+    .hiddenSpellError
+    {
+      border-bottom: 2px solid red;
+      cursor: default;
+    }
+
+    .hiddenGrammarError
+    {
+      border-bottom: 2px solid green;
+      cursor: default;
+    }
+
+    .hiddenSuggestion
+    {
+      border-bottom: 2px solid blue;
+      cursor: default;
+    }
+
+    /* */
+    .AtD_proofread_button
+    {
+      width: 14px;
+      height: 14px;
+      background-image: url('../images/writing.gif');
+      display: block;
+    }
+
+    .AtD_edit_button
+    {
+      width: 14px;
+      height: 14px;
+      background-image: url('../images/editing.gif');
+      display: block;
+    }
+
+    /* Menu styles derived from:
+    * jquery.spellchecker.js - a simple jQuery Spell Checker
+    * Copyright (c) 2008 Richard Willis
+    * MIT license  : http://www.opensource.org/licenses/mit-license.php
+    * Project      : http://jquery-spellchecker.googlecode.com
+    */
+
+    #suggestmenu
+    {
+      background: #fff;
+      position: absolute;
+      display: none;
+      z-index: 9999;
+      overflow: none;
+      margin-top: 1px;
+      text-align: left;
+      font-size: 12px;
+      font-family: Tahoma, Verdana, Arial, Helvetica;
+    }
+
+    #suggestmenu strong
+    {
+      background: #ddd;
+      font-weight: bold;
+      padding:3px 6px 3px 6px;
+      display:block;
+      border:1px solid #ccc;
+      color: black;
+    }
+
+    #suggestmenu em
+    {
+      text-align:center;
+      padding:3px 6px 3px 6px;
+      display:block;
+      border-top:1px solid #ccc;
+      border-left:1px solid #ccc;
+    }
+
+    #suggestmenu a, #suggestmenu a:visited
+    {
+      background: #fff;
+      border-left:1px solid #bbb;
+      border-right:1px solid #bbb;
+      padding:3px 6px 3px 6px;
+      display:block;
+      margin:0px;
+      text-decoration:none;
+      color:#333;
+      outline:none
+    }
+
+    #suggestmenu a.first, #suggestmenu a.first:visited
+    {
+      border-top:1px solid #ccc
+    }
+
+    .spell_sep_bottom
+    {
+      border-bottom: 1px solid #ccc;
+    }
+
+    .spell_sep_top
+    {
+      border-top: 1px solid #ccc;
+    }
+
+    #suggestmenu a:hover
+    {
+      color:#000;
+      background: #dbecf3
+    }
+
+    #suggestmenu .foot
+    {
+      border-top:1px solid #ddd;
+      background:#fff
+    }
+
+    #suggestmenu .foot a, #suggestmenu .foot a:visited
+    {
+      outline:none
+    }
+
+    /*css for pop up box*/
+    /* CSS Document */
+    #trigger {
+      text-align:center;
+    }
+
+    /* Style you custom popupbox according to your requirement */
+    .popupbox {
+      width:500px;
+      height:300px;
+      background-image:url(http://youversion.s3.amazonaws.com/pop-up_03.png);
+      background-repeat:no-repeat;
+      display: none; /* Hidden as default */
+      float: left;
+      position: fixed;
+      top: 33%; left: 33%;
+      z-index: 99999;
+      -webkit-box-shadow: 0px 0px 20px #000;
+      -moz-box-shadow: 0px 0px 20px #000;
+      box-shadow: 0px 0px 20px #000;
+    }
+    #fade {
+      display: none; /* Hidden as default */
+      background: #000;
+      position: fixed; left: 0; top: 0;
+      width: 100%; height: 100%;
+      opacity: .80;
+      z-index: 9999;
+    }
+    #intabdiv {
+      text-align:center;
+    }
+    #close img {
+      text-decoration:none;
+    }
+    #close {
+      width:50px;
+      height:50px;
+      position: absolute;
+      float:right;
+    }
+
+
+    /*end of pop of box css*/
+
+
+
+    span.red {
+      color: red;
+    }
+
+    .btn-blue{
+      background: url("http://youversion.s3.amazonaws.com/bg-blue.gif") repeat-x 0 0;
+      border: 1px solid #07366A;
+      color: #FFFFFF;
+      font-size: 13px;
+      height: 32px;
+      margin-right: 8px;
+      margin-top: 5px;
+    }
+
+    #spell-check-transciption{
+      font-size: 12px;
+      color: #BFD6E2;
+    }
+
+    .all_shadow {
+      -moz-box-shadow: 5px 5px 5px 5px #F7FBFD;
+      -webkit-box-shadow: 5px 5px 5px 5px #F7FBFD;
+      box-shadow: 5px 5px 5px 5px #F7FBFD;
+    }
+
+    .bottom_shadow {
+      -moz-box-shadow: 5px 5px 5px 5px#ccc;
+      -webkit-box-shadow: 5px 5px 5px 5px#ccc;
+      box-shadow: 5px 5px 5px 5px #ccc;
+    }
+    .right_shadow {
+      -moz-box-shadow: 5px 5px 5px 5px#ccc;
+      -webkit-box-shadow: 5px 5px 5px 5px#ccc;
+      box-shadow: 5px 5px 5px 5px #ccc;
+    }
+
+    .icon_container {
+      width: 16px;
+      display:inline-block;
+    }
+
+    .verse_icon {
+      cursor:pointer;
+    }
+
+    .verse_container{
+      font-family: 'Original Surfer', cursive;
+      line-height: 200%;
+    }
+    .verse{
+      cursor:pointer;
+      padding: 3px 5px;
+    }
+
+    .verse:hover{
+      color:black;
+    }
+
+    .verse_over{
+      opacity:1;
+    }
+
+    .normal{
+      color: #ccc;
+    }
+
+    .highlight{
+      color:black;
+    }
+
+    #progress {
+      background: none repeat scroll 0 0 white;
+      float: right;
+      height: 340px;
+      margin: 0 auto;
+      padding: 1px;
+      position: relative;
+      width: 31px;
+    }
+
+    #bar {
+      background: none repeat scroll 0 0 green;
+      bottom: 0;
+      display: block;
+      height: 1px;
+      position: absolute;
+      width: 31px;
+    }
+
+    #edit_mode_message{
+      width: 400px;
+      height: 30px;
+      position: relative;
+      left: 200px;
+    }
+
+    .edit_icon{
+      cursor: pointer;
+      top: 80px;
+      left: 200px;
+    }
+
+    .traverse{
+      display:none;
+    }
+
+    .editing_verse {
+      font-size: 0.9em;
+      height: 28px;
+      left: 340px;
+      position: absolute;
+      top: 36px;
+      width: 100px;
+    }
+
+    .warning_error, .inconsistent_error{
+      background-color: red;
+      color:white;
+
+    }
+
+    .correct_message{
+      background-color: #DFF2C2;
+    }
+
+    .disable{
+      background: url("http://youversion.s3.amazonaws.com/disabled-bg-blue.gif") repeat-x 0 0;
+      border: 1px solid #07366A;
+      color: white;
+      font-size: 13px;
+      height: 32px;
+      margin-right: 8px;
+      margin-top: 5px;
+    }
+    .for_edit{
+      display:none;
+    }
+
+    #warning_span{
+      margin: 0 39px;
+      text-align: left;
+    }
+
+    #seen
+    {
+      left: 50%;
+      position: absolute;
+      top: 75%;
+    }
+
+    #right_bar{
+      float: left;
+      margin-top: 355px;
+      position: relative;
+      width: 130px;
+    }
+
+    #youversion_form{
+      float:left
+    }
+
+    /*modal box css*/
+    #facebox .b {
+      background:url(http://youversion.s3.amazonaws.com/b.png);
+    }
+
+    #facebox .tl {
+      background:url(http://youversion.s3.amazonaws.com/tl.png);
+    }
+
+    #facebox .tr {
+      background:url(http://youversion.s3.amazonaws.com/tr.png);
+    }
+
+    #facebox .bl {
+      background:url(http://youversion.s3.amazonaws.com/bl.png);
+    }
+
+    #facebox .br {
+      background:url(http://youversion.s3.amazonaws.com/br.png);
+    }
+
+    #facebox {
+      position: absolute;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      text-align: left;
+    }
+
+    #facebox .popup {
+      position: relative;
+    }
+
+    #facebox table {
+      margin: auto;
+      border-collapse: collapse;
+    }
+
+    #facebox .body {
+      padding: 10px;
+      background: #fff;
+      width: 500px;
+    }
+
+    #facebox .loading {
+      text-align: center;
+    }
+
+    #facebox .image {
+      text-align: center;
+    }
+
+    #facebox img {
+      border: 0;
+    }
+
+    #facebox .footer {
+      border-top: 1px solid #DDDDDD;
+      padding-top: 5px;
+      margin-top: 10px;
+      text-align: right;
+    }
+
+    #facebox .tl, #facebox .tr, #facebox .bl, #facebox .br {
+      height: 10px;
+      width: 10px;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    #instruction_link{
+      font-size: 19px;
+      margin-left: 45px;
+    }
+    #instruction_link a {
+      text-decoration: none;
+      color:#fff;
+    }
+
+    #countdown {
+      display: inline-block;
+      font-size: 30px;
+      margin-left: 10px;
+      text-align: right;
+      width: 30px;
+    }
+
+    #facebox p{
+      margin: 10px 0;
+    }
+  </style>
+
+  <script>
+    var userflyHost = (("https:" == document.location.protocol) ? "https://secure.userfly.com" : "http://asset.userfly.com");
+    document.write(unescape("%3Cscript src='" + userflyHost + "/users/83280/userfly.js' type='text/javascript'%3E%3C/script%3E"));
+    // array initialized with section/verse
+    // after api is implemented the sections/verses must be poululated in the similar way
+    var verse_in_array = [];
+    var verse_num = 1;
+    var current_verse = 0;
+    var icon_html = "<img class='verse_icon' src='http://youversion.s3.amazonaws.com/heart.jpeg' id='verse_icon' \>";
+    var edit_html = "<img class='edit_icon' src='http://youversion.s3.amazonaws.com/heart.jpeg' id='edit_icon' \>";
+    var inconsistent_editing = false;
+    var consistency_threshold = 0.6;
+    var iteration = 1;
+    var time_codes_arr_to_post = [];
+    var time_codes_arr1 = [];
+    var time_codes_arr2 = [];
+    var average_word_per_second = 0.35;
+    var last_verse = null;
+    var total_estimated_time = 0;
+    var mode = "normal";
+    var estimation_arr = [];
+    var last_jumped_verse;
+    var completed_all_section = false;
+    var max_idel_time = 0;
+    var ulimit = 0.65;
+    var llimit = 0.25;
+    var last_verse = 0;
+    var time_out;
+    var audio_url = "";
+    var clicked_randomly = false;
+    var every_thing_is_all_right = false;
+
+    $(document).ready(function(){
+      $.ajax({
+        url: "http://sprout-technology.com/clients/youversion/api_call_dev.php?chapter=Isa.4&translation=kjv",
+        dataType: "json",
+        success: function(response){
+          if(response['response']['data']['errors']){
+            every_thing_is_all_right = false;
+            $('#submit_button').remove();
+            alert("Some error occured while preparing this hit. Please do not accept this hit. And please kindly inform this problem to the requester");
+          }else{
+            every_thing_is_all_right = true;
+            preparePlayerWithAudioAndText(response);
+          }
+        },
+        error: function(data){
+          alert("Sorry could not contact the vendor for audio and text. Please do not accept the hit.");
+        }
+      });
+
+      // for debugging jplayer
+      // $("#jplayer_inspector").jPlayerInspector({jPlayer:$("#jquery_jplayer")});
+    });
+    // end of document load
+
+    function preparePlayerWithAudioAndText(response){
+      if(response['response']['data']['0']['data']['request']['audio']){
+        audio_url = response['response']['data']['0']['data']['request']['audio']['0']['download_urls']['format_mp3_32k'];
+         // initializing jplayer
+        $("#jquery_jplayer").jPlayer({
+          ready: function () {
+            $(this).jPlayer("setMedia", { mp3: audio_url.toString() } );
+          },
+          //swfPath: "http://cloudfactory-transcription.s3.amazonaws.com/javascripts/",
+          swfPath: "http://www.jplayer.org/latest/js/Jplayer.swf",
+          supplied: "mp3",
+          volume: 1,
+          wmode:"window",
+          solution: "html,flash",
+          errorAlerts: true,
+          warningAlerts: false
+        });
+        //get chapter from json object
+        chapter_html = response['response']['data']['0']['data']['request']['content'];
+        plane_text = $('.verse', chapter_html).text();
+        plane_text = plane_text.replace(/(s*[0-9]+)/gi, '**');
+        verse_in_array = plane_text.split("**");
+        verse_in_array.splice (0,1); // removing first blank verse
+        // populate first verse with icon at the end
+        $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
+
+        time_out = window.setTimeout(check_move_time,4000);
+        $('#countdown').html((verse_in_array.length));
+        $('a[rel*=facebox]').facebox();
+
+        //hot keys for jplayer
+        play_pause = 'p';
+        insert = "Return";
+
+        $(document).bind('keydown', play_pause, playOrPauseAudio)
+        $(document).bind('keydown', insert, function(){
+          click_heart();
+        });
+      }else{
+        every_thing_is_all_right = false;
+        $('#submit_button').remove();
+        alert("Error fetching audio. Please do not accept this hit.");
+      }
+      $('a#show_instruction').click();
+    }
+
+
+    // put time codes to the hidden feild as the outputs
+    $('#youversion_form').submit(function() {
+      time_codes.pop();
+      time_codes.unshift(0.000000);
+      time_codes = time_codes_arr.join(",");
+      $('#timecodes_to_submit').val(time_codes);
+      return true;
+    });
+
+    $('#verse_icon').live('click', click_heart);
+    $('#edit_icon').live('click', click_heart);
+
+
+    $('span.editing_verse').html("Editing: "+(current_verse + 1));
+
+    $('.jp-next').live("click", function(){
+      move_next_previous('next');
+    });
+
+    $('.jp-previous').live("click", function(){
+      move_next_previous('prev');
+    });
+
+    // move 1 section/verse back
+    $('#step_back').live("click", function(){
+      mode = "edit";
+      last_jumped_verse = current_verse == 0 ? current_verse : current_verse - 1;
+      move_next_previous("prev");
+      $('#edit_mode_message span').html("You have moved one step back.");
+      $('#edit_mode_message span').effect("highlight", {}, 1200).fadeOut();
+      $("#jquery_jplayer").jPlayer("play");
+    });
+
+    function click_heart () {
+      if(mode == "normal") {
+        if(inconsistent_editing){
+          removeWarning();
+          saveConsistentValue();
+        }else{
+          move_heart();
+        }
+
+      }else{
+        if(inconsistent_editing){
+          removeWarning();
+          playOrPauseAudio();
+          // control will only enter here if worker finishes the same work twice
+          saveConsistentValue();
+        }else{
+          click_edit_heart();
+        }
+      }
+    }
+
+    // highlight previous/next section when prev/next handle is clicked
+    function  move_next_previous(change){
+      if(current_verse >= 0 && mode == "edit"){
+        // $('.traverse').show();
+        // $('.pp').hide();
+        $('#ver_container_'+current_verse + " img").hide();
+        $('#ver_'+current_verse).removeClass('highlight').addClass('normal');
+
+        if (change == "next" &&  current_verse < last_verse){
+          current_verse++;
+        }else if (change == "prev" && current_verse >= 1){
+          current_verse--;
+        }
+        console.log("current_verse:" + current_verse);
+        $('.editing_verse').html("Editing: "+(current_verse + 1));
+        $('#ver_'+current_verse).removeClass('normal').addClass('highlight');
+        if(current_verse == last_verse){
+          $('#ver_container_'+current_verse + " img").replaceWith(icon_html);
+        }else{
+          $('#ver_container_'+current_verse + " img").replaceWith(edit_html);
+        }
+
+        $("#jquery_jplayer").jPlayer("playHead", gotToTimeSnap((iteration > 1 ? time_codes_arr2[current_verse - 1] : time_codes_arr1[current_verse - 1]) || 0));
+      }
+    }
+
+    // unhighlight the current section/verse when clicked and highlight next section/verse
+    // after all sections/verses are completed audio is paused on section/verse clicked
+    function click_edit_heart () {
+      $('#ver_container_'+current_verse + " img").hide();
+      current_time = getSeekerTime();
+      fadeVerse();
+      // check for if the entered timecode is within our estimated time.
+      saveTimeCode(current_time);
+      //match_time_for_verse( iteration > 1 ? time_codes_arr2[current_verse] : time_codes_arr1[current_verse]);
+      //updateTimeCodesContainer();
+      // updateProgressBar();
+      $('.editing_verse').html("Editing: "+(current_verse + 2));
+      last_jumped_verse = current_verse + 1;
+      removeWarning();
+      if(!completed_all_section) { highlight_next_verse(); }// it increase current_verse by 1
+      if(completed_all_section) {
+        playOrPauseAudio();
+        // $('#edit_mode_message span').html("Click another verse to redo or last verse to continue.");
+        console.log(current_verse);
+        if($('.inconsistent_error').length < 1){
+          // cycle the warning message
+          displayWarningWithPercentageWrong('edit');
+          showModalBox($('#warning_container').text());
+        }
+      }
+    }
+
+    // highlight a verse/section on hover and remove highlight on mouseout and again highlight on click and unhighlight rest of sections.
+    $('.verse').live("click", function(){
+      if(mode == 'normal') { last_verse = current_verse; }
+      // add normal class(#ccc) to the last jumped verse if its not the last verse
+      if(last_jumped_verse >= 0 && last_jumped_verse != last_verse){
+        $('#ver_' + last_jumped_verse).removeClass('highlight').addClass('normal');
+      }
+      $(this).addClass('highlight');
+      $('.edit_icon').hide();
+
+      current_verse = parseInt(this.id.split("_")[1]);
+      if(current_verse != last_verse){
+        mode = "edit";
+        $('.verse_icon').hide();
+        $('#ver_'+last_verse).removeClass('highlight').addClass('normal');
+      }
+      $('.editing_verse').html('Editing: ' + (current_verse + 1));
+
+      // keep track of last jumped verse
+      last_jumped_verse = current_verse;
+      // jump seeker to the particular verse and play verse
+      movePlayerHeadToPreviousHead()
+      $("#jquery_jplayer").jPlayer("play");
+
+      //while editing if worker clicks the last verse do nothing
+      if(current_verse >= 0 && last_verse != current_verse){
+        $('#verse_'+current_verse + " img").replaceWith(edit_html);
+      }else if(last_verse == current_verse){
+        mode = "normal";
+        $('.highlight').addClass('highlight').removeClass('normal');
+        $('#verse_'+current_verse + " img").show();
+      }
+    });
+
+    function movePlayerHeadToPreviousHead () {
+      if(iteration > 1)
+        $("#jquery_jplayer").jPlayer("playHead", gotToTimeSnap(time_codes_arr2[current_verse - 1] || 0));
+      else
+        $("#jquery_jplayer").jPlayer("playHead", gotToTimeSnap(time_codes_arr1[current_verse - 1] || 0));
+      // body...
+    }
+
+
+    // highlight the next section/verse when a heart is clicked in edit mode.
+    function highlight_next_verse () {
+      current_verse = current_verse + 1;
+      if(current_verse == last_verse){
+        mode = "normal";
+        $('#ver_container_' + current_verse + " img").show();
+      }else{
+        $('#ver_container_' + current_verse + " img").replaceWith(edit_html);
+      }
+      $('#ver_' + current_verse).removeClass('normal').addClass('highlight');
+    }
+
+    // highlight the time code in timecode bar when a section/verse is clicked for editing
+    function highlightTimeCode () {
+      $('.timecode').removeClass();
+      $('#timecode_'+(current_verse +1)).addClass("highlight");
+    }
+
+    // move heart to next section after the heart is clicked.
+    function move_heart () {
+      current_time = getSeekerTime();
+      fadeVerse();
+      if( $(".jp-pause").css('display') == 'none' ) {
+        alert("We think you clicked heart before playing audio. For your ease we are playing the audio. Now continue.");
+        start_again();
+        $("#jquery_jplayer").jPlayer("play");
+        return false;
+      }
+      $('#verse_icon').die('click');
+      // when in edit mode worker doesn't click the edit heart but continues to click on the normal mode heart.
+      // continue in normal mode.
+      if(mode == "edit"){
+        current_verse = last_verse;
+        $('.edit_icon').hide();
+      }
+      $("#jquery_jplayer").jPlayer("pause");
+      if(current_verse < verse_in_array.length - 1){
+        mode = "normal";
+        saveTimeCode(current_time);
+        //match_time_for_verse(current_time);
+        current_verse += 1;
+        last_verse = current_verse;
+        $("#bible_chapter").append("<span id ='ver_container_"+current_verse+"' class='verse_container'><span id='ver_"+current_verse+"' class='verse'>"+verse_in_array[current_verse] + "</span><span class='icon_container' id='verse_"+current_verse+"' /></span>");
+        //remove all highligh and add highlight to the added verse
+        $(".verse").removeClass("highlight");
+        $('#ver_'+current_verse).addClass('highlight');
+        next_verse();
+        updateProgressBar(current_verse, false);
+      }else{
+        saveTimeCode(current_time); // we dont need the last timecode be its needed for screwup message
+        //match_time_for_verse(current_time);
+        // worker completed timecoding all sections
+        $('#ver_'+current_verse).removeClass('highlight').addClass("normal");
+        $('#verse_'+current_verse + ' img').hide();
+        updateProgressBar(current_verse, true);
+        completed_all_section = true;
+        window.clearTimeout(time_out);
+        $('#verse_icon').live('click', move_heart);
+        if(randomlyClicked()){
+          showModalBox("OOps! It looks like you screwed up. Try Again.");
+          start_again();
+        }else{
+          if (iteration > 1) {
+            // analyze two time code array
+            console.log("analyzing time codes");
+            analyzeTimeCodes();
+          }else{
+            // second iteration
+            showModalBox("Now the same work one more time");
+            iteration += 1;
+            // reset the worker form so that worker can work on it again.
+            start_again();
+
+          }
+        }
+
+      }
+    }
+
+    function getSeekerTime () {
+      time = $('#jquery_jplayer').data("jPlayer").status.currentTime;
+      return time;
+    }
+
+    function showModalBox (text) {
+      jQuery.facebox(text);
+    }
+
+    function hideModalBox () {
+      $('#facebox').hide();
+    }
+
+
+    function randomlyClicked () {
+      console.log("current_verse::" + current_verse);
+      last_entered_timecode = lastEnteredTimeCode();
+      audio_length = $('#jquery_jplayer').data("jPlayer").status.duration;
+      if(((last_entered_timecode/audio_length)*100) < 80){
+        clicked_randomly = true;
+      }
+      else{
+        clicked_randomly = false;
+      }
+      return clicked_randomly
+    }
+
+    function lastEnteredTimeCode () {
+      if(iteration > 1)
+        time_code = time_codes_arr2[time_codes_arr2.length - 1];
+      else
+        time_code = time_codes_arr1[time_codes_arr1.length - 1];
+        return time_code
+    }
+
+    //display warning message after the worker completes all sections wrt the worng timecodes according to our estimates
+    function displayWarningWithPercentageWrong (mode) {
+      if(completed_all_section){
+        //set warning message accordingly for normal mode
+        estimated_wrong_num = $('.estimation_error').length;
+        percentage_wrong = (estimated_wrong_num/verse_in_array.length)*100;
+        if (estimated_wrong_num > 0){
+          if (mode == 'normal') {
+            $('.estimation_error').addClass("warning_error");
+            if (percentage_wrong < 5){
+              $('#warning_container').html("Our calculations indicate "+ estimated_wrong_num +" possible mistakes. Check the highlighted sections above and if you are <b>confident you are correct</b> (our calculations are just estimates) please continue and click <b>I'm done</b>.");
+              enableFormSubmission();
+            }else{
+              $('#warning_container').html("Our calculations indicate "+ estimated_wrong_num + " possible mistakes. Please click the highlighted sections above to redo them.");
+            }
+          }else{
+            $('#warning_container').html("Thank you for doing the task. Please click <b>I'm done</b> to continue.");
+            $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+          }
+        }else{
+          //enable submit button
+          $('#warning_container').html("Congratulations!!! you have completed your task. Please click <b>I'm done</b> to continue.");
+          $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+        }
+      }
+    }
+
+    // update progress bar according to the section completed in first pass
+    function updateProgressBar(index, last_verse){
+      if(last_verse) { index++ }
+      total_length = verse_in_array.length;
+      height = ((index)/(total_length))*100;
+      $('#bar').css("height",height+'%');
+      $('#countdown').html(total_length - index);
+    }
+
+    // move the icon to the next verse and start playing audio again
+    function next_verse() {
+      scrollToBottom('bible_chapter');
+      $("#verse_"+(current_verse-1)+" img").fadeOut();
+      // $("#verse_"+(current_verse-1)+" img").replaceWith( "<img src ='checkbox.png' id='done_"+current_verse+"' />" );
+      $("#verse_"+current_verse).append(icon_html);
+      $('#verse_icon').live('click', move_heart);
+      // start playing the audio again
+      $("#jquery_jplayer").jPlayer("play");
+    }
+
+    function check_move_time(){
+      if(current_verse > 0){
+        console.log("aayo");
+        audio_time = getSeekerTime();
+        // max_idel_time = calculate_max_move_time();
+        if (audio_time >= estimatedTimeForVerseNumber(current_verse)){
+          disp_idle_confirm();
+        }
+      }
+      if((mode == "normal") || (!completed_all_section && mode == "edit")) {
+        time_out = window.setTimeout(check_move_time,2000);
+      }
+
+    }
+
+    function previousTimeCode () {
+      if(mode == 'normal'){
+        time = (iteration > 1 ? time_codes_arr2[last_verse - 1] : time_codes_arr1[last_verse - 1]) || 0;
+      }else{
+        time = (iteration > 1 ? time_codes_arr2[current_verse - 1] : time_codes_arr1[current_verse - 1]) || 0;
+      }
+      return time;
+    }
+
+    function estimatedTimeForVerseNumber(){
+      max_time = 0;
+      max_time = previousTimeCode();
+      max_time += estimate_time_for_each_verse(current_verse); // get estimated time for currently played section
+      max_time += 3 // added 5 sec so as to show the popup if worker didn't click the heart where he is supposed to
+      return max_time;
+    }
+
+
+    // calculate the estimation time for current section/verse
+    function estimate_time_for_each_verse(index){
+      words_in_verse = wordCount(index)
+      estimated_time = words_in_verse*average_word_per_second;
+      return estimated_time;
+    }
+
+    function wordCount (index) {
+      return jQuery.trim(verse_in_array[index]).split(' ').length;
+    }
+
+    // function estimatedTimeForVerseNumber (index) {
+    //   total_words = 0
+    //   for(var i=0; i<= index; i++){
+    //     total_words += wordCount(i)
+    //   }
+    //    estimated_time = total_words*average_word_per_second;
+    //   return estimated_time;
+    // }
+
+    //time_taken is the current_time of seeker of the player
+    // function match_time_for_verse(time_taken){
+    //   // console.log(current_verse);
+    //   if(lies_within_estimation_v2(time_taken)){
+    //     $('#ver_'+parseInt(current_verse)).removeClass("estimation_error").addClass("normal");
+    //     if (completed_all_section) { $('#ver_'+parseInt(current_verse)).removeClass("warning_error") };
+    //   }else{
+    //     $('#ver_'+parseInt(current_verse)).removeClass('highlight').addClass('normal')
+    //     if(current_verse > 0){ $('#ver_'+parseInt(current_verse)).addClass('estimation_error');}
+    //     if (completed_all_section) { $('#ver_'+parseInt(current_verse)).addClass("warning_error") };
+    //   }
+    // }
+    //
+    // function lies_within_estimation_v2 (time_taken) {
+    //   word_cnt = wordCount(current_verse);
+    //   upper_limit = Math.ceil(word_cnt * ulimit);
+    //   lower_limit = Math.floor(word_cnt * llimit);
+    //   real_time_for_cur_verse = time_taken - ((iteration > 1 ? time_codes_arr2[current_verse - 1] : time_codes_arr1[current_verse - 1]) || 0);
+    //
+    //   if( real_time_for_cur_verse >= lower_limit && real_time_for_cur_verse <= upper_limit ){
+    //     console.log("Verse No. "+ current_verse +" Correct. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit + " words in verse :" + word_cnt + " worker entered time:" + real_time_for_cur_verse + " time per word::" + (real_time_for_cur_verse/word_cnt) );
+    //     return true;
+    //   }else{
+    //     console.log("Verse No. "+ current_verse +" Incorrect. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit + " words in verse :" + word_cnt + " worker entered time:" + real_time_for_cur_verse + " time per word::" + (real_time_for_cur_verse/word_cnt) );
+    //     return false;
+    //   }
+    // }
+    //
+    // function lies_within_estimation (time_taken) {
+    //   estimated_time = estimatedTimeForVerseNumber(current_verse)
+    //   upper_limit = estimated_time + 3;
+    //   lower_limit = estimated_time - 3;
+    //
+    //   if( time_taken >= lower_limit && time_taken <= upper_limit ){
+    //     console.log("Verse No. "+ current_verse +" Correct. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit +  " worker entered time:" + time_taken + " time per word::" + (time_taken/wordCount(current_verse)) );
+    //     return true;
+    //   }else{
+    //     console.log("Verse No. "+ current_verse +" Incorrect. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit  + " worker entered time:" + time_taken + " time per word::" + (time_taken/wordCount(current_verse)) );
+    //     return false;
+    //   }
+    // }
+
+    // redo timecoding
+    $('#reset_form').live("click", function(){
+      disp_reset_confirm();
+    });
+
+
+    // starts over all again when worker wants to redo timecoding.
+    function disp_reset_confirm(){
+      var r=confirm("Are you sure you want to start all over again.");
+      if (r==true) { start_again(); }
+    }
+
+    function disp_idle_confirm(){
+      $("#jquery_jplayer").jPlayer("pause");
+      var r=confirm("We think you missed to click the heart. Please click 'OK' to resume from the last section.");
+      if (r==true) {
+        movePlayerHeadToPreviousHead();
+        $("#jquery_jplayer").jPlayer("play");
+      }
+      else{
+        $("#jquery_jplayer").jPlayer("play");
+        return false
+      }
+    }
+
+    // reset the window and initiate all variable again
+    function start_again(){
+      var inconsistent_editing = false;
+      verse_num = 1;
+      current_verse = 0;
+      last_verse = null;
+      total_estimated_time = 0;
+      mode = "normal";
+      estimation_arr = [];
+      completed_all_section = false;
+      max_idel_time = 0;
+      $('#submit_button').attr('disabled');
+      $("#jquery_jplayer").jPlayer("stop");
+      $("#jquery_jplayer").jPlayer("play");
+      $('#bar').css("height",'0%');
+      $('#countdown').html(verse_in_array.length);
+      $("#bible_chapter").html("");
+      $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
+      clicked_randomly = false;
+      stopAudio();
+      time_out = window.setTimeout(check_move_time,2000);
+    }
+    // function for Jpalyers
+    function playOrPauseAudio() {
+      if( $(".jp-pause").css('display') == 'none' ) {
+        $("#jquery_jplayer").jPlayer("play");
+      }
+      else {
+        $("#jquery_jplayer").jPlayer("pause");
+      }
+      return false;
+    }
+
+    // seek to the given time stamp
+    function gotToTimeSnap(time_stamp) {
+      total_duration =  $('#jquery_jplayer').data("jPlayer").status.duration;
+      return time_stamp/total_duration *100;
+    }
+
+    function convertToSeconds(time){
+      split_time = time.split(":");
+      total_sec = parseInt(split_time[0], 10) * 60 + parseInt(split_time[1],10);
+      return total_sec
+    }
+
+    function insert_timestamp () {
+      time = $.jPlayer.convertTime( $('#jquery_jplayer').data("jPlayer").status.currentTime );
+      $('#verse_' + verse_num).val(time);
+      verse_num++;
+      $('#verse_' + verse_num).focusout();
+    }
+
+    function nextSection () {
+      move_next_previous("next");
+    }
+
+    function prevSection () {
+      move_next_previous("prev");
+    }
+
+    function stopAudio() {
+      $("#jquery_jplayer").jPlayer("stop");
+    }
+
+    function decVolume() {
+      $("#jquery_jplayer").jPlayer("volume", $('#jquery_jplayer').data("jPlayer").status.volume - 0.1);
+    }
+
+    function incVolume() {
+      $("#jquery_jplayer").jPlayer("volume", $('#jquery_jplayer').data("jPlayer").status.volume + 0.1);
+    }
+
+    function scrollToBottom(id) {
+      document.getElementById(id).scrollTop=document.getElementById(id).scrollHeight
+    }
+
+    function saveTimeCode(current_time) {
+      if (iteration > 1){
+        time_codes_arr2[current_verse] = current_time;
+      }else{
+        time_codes_arr1[current_verse] = current_time;
+      }
+    }
+
+    function analyzeTimeCodes () {
+      inconsistent_error_present = false;
+      if(time_codes_arr1.length ==  time_codes_arr2.length){
+        $.each(time_codes_arr1, function(index, value) {
+          if(Math.abs(time_codes_arr1[index] - time_codes_arr2[index]) > consistency_threshold) {
+            $('#ver_'+index).removeClass('normal').addClass("inconsistent_error");
+            inconsistent_error_present = true;
+          }
+        });
+        if(!inconsistent_error_present){
+          getMeanTimeCodes();
+          enableFormSubmission();
+          showModalBox("Wow.. your clicking of heart seems to be consistent. Please click I'm done to submit your answer.");
+        }else{
+          showModalBox("Some of the heart clicks are inconsistent. Please redo them.");
+          inconsistent_editing = true;
+        }
+      }
+    }
+
+    function removeWarning(){
+      $('#ver_'+current_verse).removeClass("inconsistent_error").removeClass("highlight").removeClass("warning_error").addClass("normal");
+    }
+
+    function fadeVerse(){
+      $('#ver_'+current_verse).removeClass("highlight").addClass("normal");
+    }
+
+    function saveConsistentValue () {
+      $('#ver_container_'+current_verse + " img").hide();
+
+      time = getSeekerTime();
+      pass = wrongTimeCodeIteration(time);
+      if(pass ==1){
+        time_codes_arr1[current_verse] = time;
+      }else if(pass == 2){
+        time_codes_arr2[current_verse] = time;
+      }
+      // recheck if there are any inconsistent time codes.
+      if($(".inconsistent_error").length < 1){
+        analyzeTimeCodes();
+      }
+    }
+
+    function wrongTimeCodeIteration (time) {
+      diff1 = Math.abs(time_codes_arr1[current_verse] - time);
+      diff2 = Math.abs(time_codes_arr2[current_verse] - time);
+      if(diff1 > diff2){
+        return 1;
+      }else{
+        return 2;
+      }
+    }
+
+    function getMeanTimeCodes () {
+      $.each(time_codes_arr1, function(index, value) {
+        timecodes_to_submit[index] = (time_codes_arr1[index]+ time_codes_arr2[index])/2;
+      });
+    }
+
+    function enableFormSubmission () {
+      $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+    }
+  </script>

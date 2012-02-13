@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Form Preview</title>
+    <!-- Link external js and css files if you need.
+    
+    <link href="form.css" media="screen, projection" rel="stylesheet" type="text/css" />
+    <script src="form.js" type="text/javascript"></script> 
+    -->
+  </head>
+  <!--[if lt IE 7 ]> <body class="ie6"> <![endif]-->
+  <!--[if IE 7 ]>    <body class="ie7"> <![endif]-->
+  <!--[if IE 8 ]>    <body class="ie8"> <![endif]-->
+  <!--[if IE 9 ]>    <body class="ie9"> <![endif]-->
+  <!--[if (gt IE 9)|!(IE)]><!--> <body> <!--<![endif]-->
+  <div id="container">
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+<script src="http://cloudfactory-transcription.s3.amazonaws.com/javascripts/jquery.jplayer.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="http://cloudfactory-transcription.s3.amazonaws.com/javascripts/jquery.hotkeys.js"></script>
+
+
+
+<div id="overlay"></div>
+<h1 class="logo bottom_rounded_corners"><a title="Cloud Factory" href="/">Cloud Factory</a></h1>
+
+<div id = "instruction">
+  <div id = "show_more">
+    <div id = "instruction_text">
+      <p>Listen to the audio and follow along with the transcript. Click on the text where there are errors in spell ... <a href = "#" id = "show_more">Show More</a></p>
+    </div>
+  </div>
+  <div id = "instruction_content">
+    <div id = "instruction_text">
+    <p> Listen to the audio and follow along with the transcript. Click on the text where there are errors in spelling, punctuation, or capitalization.</p>
+    <p> When you click on an error word it will highlight red. If you accidentally click on a word that does not have an error, simply click on the word again to remove the highlight.</p>
+    <p>Drag the mouse throughout the wrong/incorrect words for multiple words to highlight/unhighlight.</p>
+    <p>NOTE: please drag the mouse slowly for multiple words to highlight/unhighlight.</p>
+    <p>You can use hot keys during playing the media.</p>
+    <p>Play/pause => Ctrl + /</p>
+    <p>Rewind => Ctrl + &lt;</p>
+    <p>Fast_forward => Ctr + ></p>
+    <p>Stop => Ctr + s</p>
+    <p>After completing the highlighting of wrong/incorrect words  for the given transcribed text , click submit button to submit your final answer.</p>
+    <p>Click spell check to check the spelling for your transcribed words.</p>
+    </div>
+  </div>
+  <div id = "click_for_instruction">
+    <a id = "show_instruction" class="bottom_rounded_corners">View Instructions</a>
+  </div>
+</div>
+
+<div id = "wrapper">
+  <div id = "player_container">
+    <div id="jquery_jplayer" style="height: 0px"></div>
+
+    <div class="jp-audio">
+      <div class="jp-type-single">
+        <div id="jp_interface_1" class="jp-interface all_rounded_corners">
+          <ul class="jp-controls">
+            <li><a href="#" class="jp-play" tabindex="1">play</a></li>
+            <li><a href="#" class="jp-pause" tabindex="1">pause</a></li>
+            <li><a href="#" class="jp-stop" tabindex="1">stop</a></li>
+
+          </ul>
+          <div class="jp-progress">
+            <div class="jp-seek-bar">
+              <div class="jp-play-bar"></div>
+            </div>
+          </div>
+          <div class="jp-volume-control">
+            <ul>
+              <li><a href="#" class="jp-mute" tabindex="1">mute</a></li>
+              <li><a href="#" class="jp-unmute" tabindex="1">unmute</a></li>
+            </ul>
+          </div>
+          <div class="jp-volume-bar">
+            <div class="jp-volume-bar-value"></div>
+          </div>
+          <div class="jp-current-time"></div>
+          <div class="jp-duration"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div id="hotkey_help" class="right_rounded_corners">
+    Play/Pause: Ctrl+/<br />
+    Rewind: Ctrl+&lt; <br />
+    Fast-forward: Ctrl+>
+  </div>
+
+
+  <form>
+    <div id = "trascription_area" class="all_rounded_corners">
+      <label for = "text" style="color:#fff;font-size:25px">Listen and click on all errors!</label>
+      <div class = "transcribed-text selector" id = "transcribed-text">
+        {{transcribed_text}}
+        </div>
+       <input type="text"  name="output[transcribed_text]" id = "hidden_text" style="display:none" />
+        <input type="text"  name="output[error_indexes]" id = "hidden_error_indexes" style="display:none" />
+      <input type = "submit" id = "submit_form" value = "I'm Done!" class='btn-blue'/>
+    </div>
+  </form>
+</div>
+
+<!-- stylesheet -->
+<style>
+body {
+  margin: 0;
+}
+.logo, .logo a {
+  float: left;
+  height: 60px;
+  margin: 0;
+  position: absolute;
+  width: 315px;
+  z-index: 2000000;
+}
+.logo a {
+    background: url("http://signup.cloudfactory.com/images/431-220211124229logo.logo.png") repeat scroll 0 0 transparent;
+    display: block;
+    text-indent: -9999px;
+}
+#wrapper {
+/*  border: 1px solid;*/
+margin: auto;
+width: 920px;
+padding-top: 86px;
+margin-bottom: 20px;
+}
+#player_container {
+  margin: 10px 0;
+  width: 787px;
+  float: left;
+}
+#hotkey_help {
+  border: 1px solid #C1D5E2;
+    color: #577589;
+    float: left;
+    font-size: 11px;
+    font-style: italic;
+    height: 75px;
+    margin: 17px 0;
+    padding: 10px 7px 0;
+    width: 110px;
+    background-color: #F7FBFD;
+}
+#trascription_area {
+     background-color: #29445E;
+      clear: both;
+      padding: 20px;
+      width: 746px;
+      border: 2px solid #C1D5E2;
+}
+
+.jp-volume-control {
+
+}
+
+div.jp-volume-control ul {
+  list-style-type:none;
+  padding:0;
+  margin: 0;
+}
+div.jp-volume-control ul li {
+  /* position: absolute; */
+  display:inline;
+}
+div.jp-volume-control ul a {
+  position: absolute;
+  overflow:hidden;
+  text-indent:-9999px;
+}
+
+div.jp-volume-control a.jp-mute,
+div.jp-volume-control a.jp-unmute {
+  top:42px !important;
+  left:687px!important;
+}
+div.jp-volume-control a.jp-mute,
+div.jp-volume-control a.jp-unmute {
+  top:42px!important;
+  left:687px!important;
+}
+
+#text, .transcribed-text {
+  border: 2px solid #aaa;
+  font-family: Georgia,Times,serif;
+  height: 315px;
+  line-height: 20px;
+  padding: 12px 5px;
+  width: 732px;
+  font-size: 16px;
+}
+
+#instruction {
+  background-color: #29445E;
+  border-bottom: 2px solid #C1D5E2;
+  color: #FFFFFF;
+  min-height: 90px;
+  position: absolute;
+  width: 100%;
+  z-index: 1000000;
+
+}
+
+#show_more a{
+  color: #BFD6E2;
+  font-style: italic;
+}
+
+#instruction_content, #show_more {
+  padding-top: 39px;
+  width: 920px;
+  margin: 0 auto;
+}
+#instruction_content {
+/*  padding-top: 10px;*/
+  display: none;
+}
+#instruction_text {
+  width: 796px;
+}
+#click_for_instruction {
+  bottom: -27px;
+  margin-right: 35px;
+  position: absolute;
+  right: 25px;
+  text-align: right;
+}
+#show_instruction {
+  border: 2px solid #C1D5E2;
+  background-color: #29445E;
+  color: #C1D5E2;
+   padding: 10px;
+   border-top: none;
+   cursor: pointer;
+}
+#show_instruction:hover {
+  color: #fff;
+}
+
+.all_rounded_corners {
+     -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -khtml-border-radius: 10px;
+    border-radius: 10px;
+}
+.bottom_rounded_corners {
+  -moz-border-radius-bottomright: 10px;
+  -moz-border-radius-bottomleft: 10px;
+  -webkit-border-bottom-right-radius: 10px;
+  -webkit-border-bottom-left-radius: 10px;
+}
+.right_rounded_corners {
+  -moz-border-radius-topright: 10px;
+  -moz-border-radius-bottomright: 10px;
+
+  -webkit-border-top-right-radius: 10px;
+  -webkit-border-bottom-right-radius: 10px;
+}
+
+#overlay {
+  z-index: 10000;
+  filter: alpha(opacity=10); /*older IE*/
+  filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50); /* IE */
+  -moz-opacity: .10; /*older Mozilla*/
+  -khtml-opacity: 0.1;   /*older Safari*/
+  opacity: 0.1;   /*supported by current Mozilla, Safari, and Opera*/
+  background-color:#000000;
+  position:fixed; top:0px; left:0px; width:100%; height:100%; text-align:center; vertical-align:middle;
+  display:none;
+}
+.transcribed-text {
+  background-color: #fff;
+}
+
+
+
+
+
+
+
+
+/*
+ * Skin for jPlayer Plugin (jQuery JavaScript Library)
+ * http://www.happyworm.com/jquery/jplayer
+ *
+ * Skin Name: Blue Monday
+ *
+ * Copyright (c) 2010 Happyworm Ltd
+ * Dual licensed under the MIT and GPL licenses.
+ *  - http://www.opensource.org/licenses/mit-license.php
+ *  - http://www.gnu.org/copyleft/gpl.html
+ *
+ * Author: Silvia Benvenuti
+ * Skin Version: 3.0 (jPlayer 2.0.0)
+ * Date: 20th December 2010
+ */
+
+div.jp-audio,
+div.jp-video {
+
+  /* Edit the font-size to counteract inherited font sizing.
+   * Eg. 1.25em = 1 / 0.8em
+   */
+
+  font-size:1em; /* No parent CSS that can effect the size in these demos */
+
+  font-family:Verdana, Arial, sans-serif;
+  line-height:1.6;
+  color: #666;
+}
+div.jp-audio {
+  width:786px;
+}
+div.jp-video-270p {
+  width:480px;
+}
+div.jp-video-360p {
+  width:640px;
+}
+div.jp-interface {
+  position: relative;
+/*  background-color:#eee;*/
+  /* width:418px; */
+  width:100%;
+  border:1px solid #C1D5E2;
+}
+div.jp-audio div.jp-type-single div.jp-interface {
+  height:100px;
+/*  border-bottom:none;*/
+}
+div.jp-audio div.jp-type-playlist div.jp-interface {
+  height:80px;
+}
+div.jp-video div.jp-type-single div.jp-interface {
+  height:60px;
+  border-bottom:none;
+}
+div.jp-video div.jp-type-playlist div.jp-interface {
+  height:60px;
+}
+div.jp-interface ul.jp-controls {
+  list-style-type:none;
+  padding:0;
+  margin: 0;
+}
+div.jp-interface ul.jp-controls li {
+  /* position: absolute; */
+  display:inline;
+}
+div.jp-interface ul.jp-controls a {
+  position: absolute;
+  overflow:hidden;
+  text-indent:-9999px;
+}
+a.jp-play,
+a.jp-pause {
+  width:40px;
+  height:40px;
+  z-index:1;
+}
+div.jp-audio div.jp-type-single a.jp-play,
+div.jp-audio div.jp-type-single a.jp-pause {
+  top:29px;
+  left:40px;
+}
+div.jp-audio div.jp-type-playlist a.jp-play,
+div.jp-audio div.jp-type-playlist a.jp-pause {
+  top:29px;
+  left:48px;
+}
+div.jp-video a.jp-play,
+div.jp-video a.jp-pause {
+  top:15px;
+}
+div.jp-video-270p div.jp-type-single a.jp-play,
+div.jp-video-270p div.jp-type-single a.jp-pause {
+  left:195px;
+}
+div.jp-video-270p div.jp-type-playlist a.jp-play,
+div.jp-video-270p div.jp-type-playlist a.jp-pause {
+  left:220px;
+}
+div.jp-video-360p div.jp-type-single a.jp-play,
+div.jp-video-360p div.jp-type-single a.jp-pause {
+  left:275px;
+}
+div.jp-video-360p div.jp-type-playlist a.jp-play,
+div.jp-video-360p div.jp-type-playlist a.jp-pause {
+  left:300px;
+}
+a.jp-play {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 0 no-repeat;
+}
+a.jp-play:hover {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -41px 0 no-repeat;
+}
+a.jp-pause {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -42px no-repeat;
+  display: none;
+}
+a.jp-pause:hover {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -41px -42px no-repeat;
+}
+div.jp-audio div.jp-type-single a.jp-stop {
+  top:36px;
+  left:90px;
+}
+div.jp-audio div.jp-type-playlist a.jp-stop {
+  top:26px;
+  left:126px;
+}
+div.jp-video a.jp-stop {
+  top:21px;
+}
+div.jp-video-270p div.jp-type-single a.jp-stop {
+  left:245px;
+}
+div.jp-video-270p div.jp-type-playlist a.jp-stop {
+  left:298px;
+}
+div.jp-video-360p div.jp-type-single a.jp-stop {
+  left:325px;
+}
+div.jp-video-360p div.jp-type-playlist a.jp-stop {
+  left:378px;
+}
+a.jp-stop {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -83px no-repeat;
+  width:28px;
+  height:28px;
+  z-index:1;
+}
+a.jp-stop:hover {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -29px -83px no-repeat;
+}
+div.jp-audio div.jp-type-playlist a.jp-previous {
+  left:20px;
+  top:26px;
+}
+div.jp-video div.jp-type-playlist a.jp-previous {
+  top:21px;
+}
+div.jp-video-270p div.jp-type-playlist a.jp-previous {
+  left:192px;
+}
+div.jp-video-360p div.jp-type-playlist a.jp-previous {
+  left:272px;
+}
+a.jp-previous {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -112px no-repeat;
+  width:28px;
+  height:28px;
+}
+a.jp-previous:hover {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -29px -112px no-repeat;
+}
+div.jp-audio div.jp-type-playlist a.jp-next {
+  left:88px;
+  top:26px;
+}
+div.jp-video div.jp-type-playlist a.jp-next {
+  top:21px;
+}
+div.jp-video-270p div.jp-type-playlist a.jp-next {
+  left:260px;
+}
+div.jp-video-360p div.jp-type-playlist a.jp-next {
+  left:340px;
+}
+a.jp-next {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -141px no-repeat;
+  width:28px;
+  height:28px;
+}
+a.jp-next:hover {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -29px -141px no-repeat;
+}
+div.jp-progress {
+  position: absolute;
+  overflow:hidden;
+  background-color: #ddd;
+}
+div.jp-audio div.jp-type-single div.jp-progress {
+  top:42px;
+  left:130px;
+  width:550px;
+  height:15px;
+}
+div.jp-audio div.jp-type-playlist div.jp-progress {
+  top:32px;
+  left:164px;
+  width:122px;
+  height:15px;
+}
+div.jp-video div.jp-progress {
+  top:0px;
+  left:0px;
+  width:100%;
+  height:10px;
+}
+div.jp-seek-bar {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -202px repeat-x;
+  width:0px;
+  /* height:15px; */
+  height:100%;
+  cursor: pointer;
+}
+div.jp-play-bar {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -218px repeat-x ;
+  width:0px;
+  /* height:15px; */
+  height:100%;
+}
+
+/* The seeking class is added/removed inside jPlayer */
+div.jp-seeking-bg {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/pbar-ani.gif");
+}
+
+a.jp-mute,
+a.jp-unmute {
+  width:18px;
+  height:15px;
+}
+div.jp-audio div.jp-type-single a.jp-mute,
+div.jp-audio div.jp-type-single a.jp-unmute {
+  top:32px;
+  left:274px;
+}
+div.jp-audio div.jp-type-playlist a.jp-mute,
+div.jp-audio div.jp-type-playlist a.jp-unmute {
+  top:32px;
+  left:296px;
+}
+div.jp-video a.jp-mute,
+div.jp-video a.jp-unmute {
+  top:27px;
+}
+div.jp-video-270p div.jp-type-single a.jp-mute,
+div.jp-video-270p div.jp-type-single a.jp-unmute {
+  left:304px;
+}
+div.jp-video-270p div.jp-type-playlist a.jp-unmute,
+div.jp-video-270p div.jp-type-playlist a.jp-mute {
+  left:363px;
+}
+div.jp-video-360p div.jp-type-single a.jp-mute,
+div.jp-video-360p div.jp-type-single a.jp-unmute {
+  left:384px;
+}
+div.jp-video-360p div.jp-type-playlist a.jp-mute,
+div.jp-video-360p div.jp-type-playlist a.jp-unmute {
+  left:443px;
+}
+a.jp-mute {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -186px no-repeat;
+}
+a.jp-mute:hover {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -19px -170px no-repeat;
+}
+a.jp-unmute {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -170px no-repeat;
+  display: none;
+}
+a.jp-unmute:hover {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") -19px -186px no-repeat;
+}
+div.jp-volume-bar {
+  position: absolute;
+  overflow:hidden;
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -250px repeat-x;
+  width:46px;
+  height:5px;
+  cursor: pointer;
+}
+div.jp-audio div.jp-type-single div.jp-volume-bar {
+  top:47px;
+  left:708px;
+}
+div.jp-audio div.jp-type-playlist div.jp-volume-bar {
+  top:37px;
+  left:324px;
+}
+div.jp-video div.jp-volume-bar {
+  top:32px;
+}
+div.jp-video-270p div.jp-type-single div.jp-volume-bar {
+  left:332px;
+}
+div.jp-video-270p div.jp-type-playlist div.jp-volume-bar {
+  left:391px;
+}
+div.jp-video-360p div.jp-type-single div.jp-volume-bar {
+  left:412px;
+}
+div.jp-video-360p div.jp-type-playlist div.jp-volume-bar {
+  left:471px;
+}
+div.jp-volume-bar-value {
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.jpg") 0 -256px repeat-x;
+  width:0px;
+  height:5px;
+}
+div.jp-current-time,
+div.jp-duration {
+  position: absolute;
+  font-size:.64em;
+  font-style:oblique;
+}
+div.jp-duration {
+  text-align: right;
+}
+div.jp-audio div.jp-type-single div.jp-current-time,
+div.jp-audio div.jp-type-single div.jp-duration {
+  top:57px;
+  left:130px;
+  width:550px;
+}
+div.jp-audio div.jp-type-playlist div.jp-current-time,
+div.jp-audio div.jp-type-playlist div.jp-duration {
+  top:49px;
+  left:164px;
+  width:122px;
+}
+div.jp-video div.jp-current-time,
+div.jp-video div.jp-duration {
+  top:10px;
+  left:0px;
+  width:98%;
+  padding:0 1%;
+}
+div.jp-playlist {
+  /* width:418px; */
+  width:100%;
+  background-color:#ccc;
+  border:1px solid #C1D5E2;
+  border-top:none;
+}
+div.jp-playlist ul {
+  list-style-type:none;
+  margin:0;
+  padding:0 20px;
+  /* background-color:#ccc; */
+  /* border:1px solid #C1D5E2; */
+  /* border-top:none; */
+  /* width:378px; */
+  font-size:.72em;
+}
+
+
+div.jp-type-single div.jp-playlist li {
+  padding:5px 0 5px 20px;
+  font-weight:bold;
+}
+div.jp-type-playlist div.jp-playlist li {
+  padding:5px 0 4px 20px;
+  border-bottom:1px solid #eee;
+}
+/*
+div.jp-video div.jp-playlist li {
+  padding:5px 0 5px 20px;
+  font-weight:bold;
+}
+*/
+div.jp-type-playlist div.jp-playlist li.jp-playlist-last {
+  padding:5px 0 5px 20px;
+  border-bottom:none;
+}
+div.jp-type-playlist div.jp-playlist li.jp-playlist-current {
+  list-style-type:square;
+  list-style-position:inside;
+  padding-left:8px;
+}
+div.jp-type-playlist div.jp-playlist a {
+  color: #666;
+  text-decoration: none;
+}
+div.jp-type-playlist div.jp-playlist a:hover {
+  color:#0d88c1;
+}
+div.jp-type-playlist div.jp-playlist a.jp-playlist-current {
+  color:#0d88c1;
+}
+div.jp-type-playlist div.jp-playlist div.jp-free-media {
+  display:inline;
+  margin-left:20px;
+}
+
+div.jp-video div.jp-video-play {
+  background: transparent url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.monday.video.play.png") no-repeat center;
+  /* position: relative; */
+  position: absolute;
+  cursor:pointer;
+  z-index:2;
+}
+div.jp-video div.jp-video-play:hover {
+  background: transparent url("http://cloudfactory-transcription.s3.amazonaws.com/skin/jplayer.blue.monday.video.play.hover.png") no-repeat center;
+}
+div.jp-video-270p div.jp-video-play {
+  top:-270px;
+  width:480px;
+  height:270px;
+}
+div.jp-video-360p div.jp-video-play {
+  top:-360px;
+  width:640px;
+  height:360px;
+}
+
+div.jp-jplayer {
+  width:0px;
+  height:0px;
+}
+div.jp-video div.jp-jplayer {
+  border:1px solid #C1D5E2;
+  border-bottom:none;
+  z-index:1;
+}
+div.jp-video-270p div.jp-jplayer {
+  width:480px;
+  height:270px;
+}
+div.jp-video-360p div.jp-jplayer {
+  width:640px;
+  height:360px;
+}
+div.jp-jplayer {
+  background-color: #000000;
+}
+
+
+
+
+/* AtD error styles */
+
+.hiddenSpellError
+{
+   border-bottom: 2px solid red;
+   cursor: default;
+}
+
+.hiddenGrammarError
+{
+   border-bottom: 2px solid green;
+   cursor: default;
+}
+
+.hiddenSuggestion
+{
+   border-bottom: 2px solid blue;
+   cursor: default;
+}
+
+/* */
+.AtD_proofread_button
+{
+   width: 14px;
+   height: 14px;
+   background-image: url('../images/writing.gif');
+   display: block;
+}
+
+.AtD_edit_button
+{
+   width: 14px;
+   height: 14px;
+   background-image: url('../images/editing.gif');
+   display: block;
+}
+
+/* Menu styles derived from:
+ * jquery.spellchecker.js - a simple jQuery Spell Checker
+ * Copyright (c) 2008 Richard Willis
+ * MIT license  : http://www.opensource.org/licenses/mit-license.php
+ * Project      : http://jquery-spellchecker.googlecode.com
+ */
+
+#suggestmenu
+{
+   background: #fff;
+   position: absolute;
+   display: none;
+   z-index: 9999;
+   overflow: none;
+   margin-top: 1px;
+   text-align: left;
+   font-size: 12px;
+   font-family: Tahoma, Verdana, Arial, Helvetica;
+}
+
+#suggestmenu strong
+{
+   background: #ddd;
+   font-weight: bold;
+   padding:3px 6px 3px 6px;
+   display:block;
+   border:1px solid #ccc;
+   color: black;
+}
+
+#suggestmenu em
+{
+   text-align:center;
+   padding:3px 6px 3px 6px;
+   display:block;
+   border-top:1px solid #ccc;
+   border-left:1px solid #ccc;
+}
+
+#suggestmenu a, #suggestmenu a:visited
+{
+   background: #fff;
+   border-left:1px solid #bbb;
+   border-right:1px solid #bbb;
+   padding:3px 6px 3px 6px;
+   display:block;
+   margin:0px;
+   text-decoration:none;
+   color:#333;
+   outline:none
+}
+
+#suggestmenu a.first, #suggestmenu a.first:visited
+{
+   border-top:1px solid #ccc
+}
+
+.spell_sep_bottom
+{
+   border-bottom: 1px solid #ccc;
+}
+
+.spell_sep_top
+{
+   border-top: 1px solid #ccc;
+}
+
+#suggestmenu a:hover
+{
+   color:#000;
+   background: #dbecf3
+}
+
+#suggestmenu .foot
+{
+   border-top:1px solid #ddd;
+   background:#fff
+}
+
+#suggestmenu .foot a, #suggestmenu .foot a:visited
+{
+   outline:none
+}
+
+span.red {
+  color: red;
+}
+
+.btn-blue{
+  background: url("http://cloudfactory-transcription.s3.amazonaws.com/skin/bg-blue.gif") repeat-x 0 0;
+  border: 1px solid #07366A;
+  color: #FFFFFF;
+  font-size: 13px;
+  height: 32px;
+  margin-right: 8px;
+  margin-top: 5px;
+}
+
+#spell-check-transciption{
+  font-size: 12px;
+  color: #BFD6E2;
+}
+</style>
+
+<!-- scripts -->
+<script>
+$(document).ready(function(){
+  var transcribed = $('#transcribed-text').html();
+  var text = transcribed.trim().split(' ');
+  transcribeds = "";
+  for( var i = 0, len = text.length; i < len; i=i+1 ) {
+    transcribeds += "<span id = '"+ (i+1) +"'  >" + text[i] + "</span> ";
+  }
+  $('#transcribed-text').html(transcribeds);
+
+  $("#jquery_jplayer").jPlayer({
+    ready: function () {
+      $(this).jPlayer("setMedia", {
+        mp3: "{{splits_of_converted_file_from_url}}"
+      })
+    },
+    ended: function (event) {
+      $(this).jPlayer("play");
+    },
+    swfPath: "http://cloudfactory-transcription.s3.amazonaws.com/javascripts",
+    supplied: "mp3"
+  });
+
+
+
+  $('#submit_form').live('click', function() {
+    text = "";
+    index_arry = [];
+    $('#transcribed-text span').each(function(index){
+        text = text + " " + $(this).html().trim();
+       if ($(this).attr('class') == 'red')
+        index_arry.push(index);
+    });
+    $('#hidden_text').val(text);
+    $('#hidden_error_indexes').val(index_arry);
+  });
+
+  // scripts from form.js
+  var clicking = false;
+   var prev = $('div.selector');
+   var starting_index  = 0;
+   var ending_index = 0;
+     highlighted_index = new Array();;
+
+   $('#transcribed-text').mousedown(function(event){
+     element = $(event.target);
+     if($(element).attr("id") == 'transcribed-text') return;
+     clicking = true;
+     prev = $(event.target);
+     starting_index = parseInt($(element).attr("id"));
+     toggleClass(element);
+   });
+
+   $(document).mouseup(function(event){
+     clicking = false;
+     element = $(event.target);
+     ending_index = parseInt($(element).attr("id"));
+
+     for(i = starting_index ; i <= ending_index; i++) {
+       if($(element).attr("class") == "red"){
+         $("#"+i).attr("class", 'red');
+       } else {
+         $("#"+i).attr("class", '');
+       }
+     }
+   });
+
+
+   $('#transcribed-text').mousemove(function(event){
+     element = $(event.target);
+     if(clicking == false) return;
+     if (!(prev.attr('id') == $(element).attr('id')) && !($(element).attr('id') == 'transcribed-text')) {
+       toggleClass(element);
+       prev = $(event.target);
+     }
+   });
+
+   transcription_area = "#text"
+   play_pause = 'Ctrl+/';
+   rewind = "Ctrl+<";
+   fast_forward = "Ctrl+>";
+   decrease_volumn = "Ctrl+9"
+   increase_volumn = "Ctrl+0"
+   stop = "Ctrl+o"
+
+   $('#show_instruction').toggle(function() {
+     $("#jquery_jplayer").jPlayer("pause");
+     $('#overlay').toggle();
+     $('#show_more').toggle();
+     $('#instruction_content').animate({
+       height: 'toggle'
+     }, 1000, function(){
+       $('#show_instruction').html("Hide Instructions")
+     });
+   }, function(){
+     $('#instruction_content').animate({
+       height: 'toggle'
+     }, 1000, function(){
+       $('#show_more').toggle();
+       $('#overlay').toggle();
+       $('#show_instruction').html("View Instructions");
+     });
+   });
+
+   $('#show_more').click(function() {
+     $('#show_instruction').trigger('click');
+   });
+
+   $('.spell-check-transciption').live("click", function() {
+     var spell_check_id = $(this).attr('id');
+     check(spell_check_id, "text")
+   });
+
+   $(document).bind('keydown', stop, stopAudio)
+   $(document).bind('keydown', play_pause, startOrStopAudio)
+   $(document).bind('keypress', rewind, rewindAudio)
+   $(document).bind('keypress', fast_forward, fastForwardAudio)
+   $(document).bind('keypress', decrease_volumn, decVolume)
+   $(document).bind('keypress', increase_volumn, incVolume)
+
+   //binding hotkeys on typing area
+   // Ctrl + space => pause/play
+   // Ctrl + + => forward by 3 sec
+   // Ctrl + - => backward by 3 sec
+
+   $(transcription_area).bind('keydown', stop, stopAudio)
+   $(transcription_area).bind('keydown', play_pause, startOrStopAudio)
+   $(transcription_area).bind('keypress', rewind, rewindAudio)
+   $(transcription_area).bind('keypress', fast_forward, fastForwardAudio)
+   $(transcription_area).bind('keypress', decrease_volumn, decVolume)
+   $(transcription_area).bind('keypress', increase_volumn, incVolume)
+
+   $("#jquery_jplayer").bind($.jPlayer.event.pause, function(event) { // Add a listener to report the time play began
+     $("#jquery_jplayer").jPlayer("playHead", get_seeking_time("rewind"));
+   });
+});
+
+function get_seeking_time(action) {
+  var default_play_back = 3 // back 3 seconds
+  currentTime = $('#jquery_jplayer').data("jPlayer").status.currentTime
+  total_duration =  $('#jquery_jplayer').data("jPlayer").status.duration
+  if (currentTime <= 0) {
+    return 0;
+  }
+  else {
+    if(action == 'rewind') {
+      return (currentTime - default_play_back)/total_duration * 100
+    }
+    else if(action == 'forward') {
+      return (currentTime + default_play_back)/total_duration * 100
+    }
+  }
+}
+
+function startOrStopAudio() {
+  if( $(".jp-pause").css('display') == 'none' ) {
+    $("#jquery_jplayer").jPlayer("play");
+  }
+  else {
+    $("#jquery_jplayer").jPlayer("pause");
+  }
+  return false;
+}
+
+function stopAudio() {
+  $("#jquery_jplayer").jPlayer("stop");
+}
+function rewindAudio() {
+  $("#jquery_jplayer").jPlayer("playHead", get_seeking_time("rewind"));
+}
+
+function fastForwardAudio() {
+  $("#jquery_jplayer").jPlayer("playHead", get_seeking_time("forward"));
+}
+
+function decVolume() {
+  $("#jquery_jplayer").jPlayer("volume", $('#jquery_jplayer').data("jPlayer").status.volume - 0.1);
+}
+
+function incVolume() {
+  $("#jquery_jplayer").jPlayer("volume", $('#jquery_jplayer').data("jPlayer").status.volume + 0.1);
+}
+
+
+function check(spell_check_id, textarea_id) {
+  AtD.checkTextAreaCrossAJAX(textarea_id, spell_check_id, 'Done');
+}
+// Note mp3 is not playing in firefox; use oga format
+
+function toggleClass(element) {
+  if($(element).attr("class") == "red"){
+    $(element).attr("class", '');
+
+  } else {
+    $(element).attr("class", 'red');
+  }
+}
+</script>
+  </div>
+</body>
+</html>
