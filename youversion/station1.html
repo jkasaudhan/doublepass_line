@@ -1111,8 +1111,10 @@
     var audio_url = "";
     var clicked_randomly = false;
     var every_thing_is_all_right = false;
+    var spanish_bias = 4;
+    var spanish_ulimit = .8;
 
-    $(document).ready(function(){
+//    $(document).ready(function(){
       $.ajax({
         url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter={{chapter}}&translation={{translation}}",
         dataType: "json",
@@ -1133,7 +1135,7 @@
 
       // for debugging jplayer
       // $("#jplayer_inspector").jPlayerInspector({jPlayer:$("#jquery_jplayer")});
-    });
+//    });
     // end of document load
 
     function preparePlayerWithAudioAndText(response){
@@ -1538,7 +1540,7 @@
     // calculate the estimation time for current section/verse
     function estimate_time_for_each_verse(index){
       words_in_verse = wordCount(index)
-      estimated_time = words_in_verse*ulimit;
+      estimated_time = words_in_verse*spanish_ulimit + spanish_bias;
       return estimated_time;
     }
 
