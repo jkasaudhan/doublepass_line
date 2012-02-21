@@ -1106,7 +1106,7 @@
 
     $(document).ready(function(){
       $.ajax({
-        url: "http://sprout-technology.com/clients/youversion/api_call_dev.php?chapter=Isa.4&translation=kjv",
+        url: "http://sprout-technology.com/clients/youversion/api_call_dev.php?chapter=Rev.13&translation=kjv",
         dataType: "json",
         success: function(response){
           if(response['response']['data']['errors']){
@@ -1522,7 +1522,7 @@
     // calculate the estimation time for current section/verse
     function estimate_time_for_each_verse(index){
       words_in_verse = wordCount(index)
-      estimated_time = words_in_verse*average_word_per_second;
+      estimated_time = words_in_verse*ulimit;
       return estimated_time;
     }
 

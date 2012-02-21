@@ -7,18 +7,18 @@
 7,Judg,Judges
 8,Ruth,Ruth
 9,1Sam,1 Samuel
-10,2Sam,2 Samuel
+10,2Sam,2 Samuel 
 11,1Kgs,1 Kings
-12,2Kgs,2 Kings 
+12,2Kgs,2 Kings ==========
 13,1Chr,1 Chronicles
 14,2Chr,2 Chronicles
 15,Ezra,Ezra
-16,Neh,Nehemiah 
+16,Neh,Nehemiah ========
 17,Esth,Esther
 18,Job,Job
-19,Ps,Psalm 
-20,Prov,Proverbs
-21,Eccl,Ecclesiastes
+19,Ps,Psalm =========
+20,Prov,Proverbs ===========
+21,Eccl,Ecclesiastes ==========
 22,Song,Song of Solomon 
 23,Isa,Isaiah
 24,Jer,Jeremiah
@@ -32,9 +32,9 @@
 32,Jonah,Jonah
 33,Mic,Micah
 34,Nah,Nahum
-35,Hab,Habakkuk -------------
+35,Hab,Habakkuk -------------------
 36,Zeph,Zephaniah
-37,Hag,Haggai 
+37,Hag,Haggai
 38,Zech,Zechariah
 39,Mal,Malachi
 40,Matt,Matthew
@@ -55,12 +55,12 @@
 55,2Tim,2 Timothy
 56,Titus,Titus
 57,Phlm,Philemon
-58,Heb,Hebrews ======
-59,Jas,James 
+58,Heb,Hebrews -------------
+59,Jas,James
 60,1Pet,1 Peter
 61,2Pet,2 Peter
 62,1John,1 John
 63,2John,2 John
 64,3John,3 John
-65,Jude,Jude **
-66,Rev,Revelation ======
+65,Jude,Jude
+66,Rev,Revelation

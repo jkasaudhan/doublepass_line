@@ -3,6 +3,7 @@
 <link href='http://fonts.googleapis.com/css?family=Original+Surfer' rel='stylesheet' type='text/css'>
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+<script type="text/javascript" src="http://youversion.s3.amazonaws.com/jquery.unobtrusive.ajax.js"></script>
 <script src="http://www.jplayer.org/latest/js/jquery.jplayer.min.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript" src="http://cloudfactory-transcription.s3.amazonaws.com/javascripts/jquery.hotkeys.js"></script>
 <script src="http://youversion.s3.amazonaws.com/lightbox.js" type="text/javascript"></script>
@@ -11,15 +12,14 @@
 
 <div id = "instruction_text" style="display:none">
   <h2>Instructions</h2>
-  <p><b>Click on the heart icon immediately after the audio plays the word before it.</b></p>
-  <p>Be as precise as possible. If you think you clicked a heart mistakenly, click the corresponding section to start the audio from the same position.</p>
-  <p>When all hearts are clicked on, <b>press "I'm Done!"</b> button to submit your task.</p>
-  <p><b>Hot keys:</b></p>
-  <p>CLick heart => Enter</p>
-  <p>Play/pause => Ctrl + /</p>
-  <p>Stop => Ctrl + s</p>
-  <p>Next Section => Ctrl + > (Only available for editing) </p>
-  <p>Previous Section => Ctrl + <  (Only available for editing) </p>
+  <p><b>Play the audio, read along and then click on the hearts immediately after the speaker reads the word before it.</b></p>
+  <p>If you think you clicked on a heart mistakenly, click on the corresponding sentence to correct it.</p>
+  <p>We are using this information to time code our audio.So, for accuracy, we require you to <b>do the same task twice.</b></p>
+  <p> After you complete your second round, Please click on the "I'm Done" button to submit your task.</p>
+  <p> Try to <b>be as precise as possible</b> both time. Otherwise, it might <b>take you longer to complete this task.</b></p>
+  <p><b>Keyboard shortcuts:</b></p>
+  <p>Click heart => Enter</p>
+  <p>Play/pause => p</p>
 </div>
 <div id = "wrapper">
   <div id = "trascription_area" class="all_rounded_corners">
@@ -31,7 +31,7 @@
       <div id = "bible_chapter" style="overflow:scroll;background:#fff">
 
       </div>
-      <input type = "submit" id = "submit_button" value = "I'm Done!" class='disable' disabled='disabled' />
+      <div id="submit_btn"><img src="http://i.imgur.com/lndH3.png" title="I'm done" alt="I'm Done" /></div>
       <input type = "button" id = "step_back" value = 'One Step Back' class='btn-blue' style="float: right;" />
       <input type = "reset" id = "reset_form" value = 'Try Again' class='btn-blue' style="float: right;" />
     </form>
@@ -195,7 +195,11 @@
       font-size: 20px;
       padding-left: 10px;
     }
-
+    
+    
+    #submit_btn{
+      float: left;    
+    }
 
     /*
     * Skin for jPlayer Plugin (jQuery JavaScript Library)
@@ -935,7 +939,7 @@
       width: 100px;
     }
 
-    .warning_error{
+    .warning_error, .inconsistent_error{
       background-color: red;
       color:white;
 
@@ -1075,7 +1079,8 @@
   </style>
 
   <script>
-
+    var userflyHost = (("https:" == document.location.protocol) ? "https://secure.userfly.com" : "http://asset.userfly.com");
+    document.write(unescape("%3Cscript src='" + userflyHost + "/users/83280/userfly.js' type='text/javascript'%3E%3C/script%3E"));
     // array initialized with section/verse
     // after api is implemented the sections/verses must be poululated in the similar way
     var verse_in_array = [];
@@ -1083,8 +1088,15 @@
     var current_verse = 0;
     var icon_html = "<img class='verse_icon' src='http://youversion.s3.amazonaws.com/heart.jpeg' id='verse_icon' \>";
     var edit_html = "<img class='edit_icon' src='http://youversion.s3.amazonaws.com/heart.jpeg' id='edit_icon' \>";
-    var time_codes_arr = [];
-    var average_word_per_second = 0.45;
+    var submit_button =  "<div id=\"submit_btn\"><input type = \"submit\" id = \"submit_button\" value = \"I'm Done!\" class='btn-blue' /></div>";
+    var submit_img = "<div id=\"submit_btn\"><img src=\"http://i.imgur.com/lndH3.png\" title=\"I'm done\" alt=\"I\'m Done\" /></div>";
+    var inconsistent_editing = false;
+    var consistency_threshold = 0.6;
+    var iteration = 1;
+    var timecodes_to_submit = [];
+    var time_codes_arr1 = [];
+    var time_codes_arr2 = [];
+    var average_word_per_second = 0.35;
     var last_verse = null;
     var total_estimated_time = 0;
     var mode = "normal";
@@ -1099,12 +1111,10 @@
     var audio_url = "";
     var clicked_randomly = false;
     var every_thing_is_all_right = false;
-    var test_mode = true;
-    var worker_time_codes = [];
 
     $(document).ready(function(){
       $.ajax({
-        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=Luke.5&translation=kjv",
+        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=Ps.117&translation=kjv",
         dataType: "json",
         success: function(response){
           if(response['response']['data']['errors']){
@@ -1144,6 +1154,7 @@
           warningAlerts: false
         });
         //get chapter from json object
+       
         chapter_html = response['response']['data']['0']['data']['request']['content'];
         plane_text = $('.verse', chapter_html).text();
         plane_text = plane_text.replace(/(s*[0-9]+)/gi, '**');
@@ -1152,30 +1163,20 @@
         // populate first verse with icon at the end
         $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
 
-        time_out = window.setTimeout(check_move_time,4000);
+        //time_out = window.setTimeout(check_move_time,4000);
         $('#countdown').html((verse_in_array.length));
         $('a[rel*=facebox]').facebox();
 
         //hot keys for jplayer
-        play_pause = 'Ctrl+/';
-        prev_section = "Ctrl+<";
-        next_section = "Ctrl+>";
-        decrease_volumn = "Ctrl+9";
-        increase_volumn = "Ctrl+0";
-        stop = "Ctrl+o";
+        play_pause = 'p';
         insert = "Return";
 
-        $(document).bind('keydown', stop, stopAudio)
         $(document).bind('keydown', play_pause, playOrPauseAudio)
-        $(document).bind('keypress', prev_section, prevSection)
-        $(document).bind('keypress', next_section, nextSection)
-        $(document).bind('keypress', decrease_volumn, decVolume)
-        $(document).bind('keypress', increase_volumn, incVolume)
         $(document).bind('keydown', insert, function(){
           click_heart();
         });
       }else{
-        every_thing_is_all_right = false
+        every_thing_is_all_right = false;
         $('#submit_button').remove();
         alert("Error fetching audio. Please do not accept this hit.");
       }
@@ -1185,13 +1186,20 @@
 
     // put time codes to the hidden feild as the outputs
     $('#youversion_form').submit(function() {
-      time_codes = time_codes_arr.join(",");
-      $('#timecodes_to_submit').val(time_codes);
-      return true;
+      timecodes_to_submit.pop();
+      timecodes_to_submit.unshift(0.000000);
+      time_codes = timecodes_to_submit.join(",");
+      if(iteration > 1){
+        $('#timecodes_to_submit').val(time_codes);
+        return true;
+      }else{
+        return false;
+      }
     });
 
-    $('#verse_icon').live('click', move_heart);
-    $('#edit_icon').live('click', click_edit_heart);
+    $('#verse_icon').live('click', click_heart);
+    $('#edit_icon').live('click', click_heart);
+
 
     $('span.editing_verse').html("Editing: "+(current_verse + 1));
 
@@ -1210,14 +1218,31 @@
       move_next_previous("prev");
       $('#edit_mode_message span').html("You have moved one step back.");
       $('#edit_mode_message span').effect("highlight", {}, 1200).fadeOut();
+      $('#submit_btn').replaceWith(submit_img);
       $("#jquery_jplayer").jPlayer("play");
     });
 
     function click_heart () {
+      window.clearTimeout(time_out);
       if(mode == "normal") {
-        move_heart();
+        if(inconsistent_editing){
+          removeWarning();
+          saveConsistentValue();
+        }else{
+          time_out = window.setTimeout(check_move_time,2000);
+          move_heart();
+        }
+
       }else{
-        click_edit_heart();
+        if(inconsistent_editing){
+          removeWarning();
+          playOrPauseAudio();
+          // control will only enter here if worker finishes the same work twice
+          saveConsistentValue();
+        }else{
+          time_out = window.setTimeout(check_move_time,2000);
+          click_edit_heart();
+        }
       }
     }
 
@@ -1234,7 +1259,6 @@
         }else if (change == "prev" && current_verse >= 1){
           current_verse--;
         }
-        console.log("current_verse:" + current_verse);
         $('.editing_verse').html("Editing: "+(current_verse + 1));
         $('#ver_'+current_verse).removeClass('normal').addClass('highlight');
         if(current_verse == last_verse){
@@ -1243,7 +1267,7 @@
           $('#ver_container_'+current_verse + " img").replaceWith(edit_html);
         }
 
-        $("#jquery_jplayer").jPlayer("playHead", gotToTimeSnap(time_codes_arr[current_verse - 1] || 0));
+        $("#jquery_jplayer").jPlayer("playHead", gotToTimeSnap((iteration > 1 ? time_codes_arr2[current_verse - 1] : time_codes_arr1[current_verse - 1]) || 0));
       }
     }
 
@@ -1252,24 +1276,19 @@
     function click_edit_heart () {
       $('#ver_container_'+current_verse + " img").hide();
       current_time = getSeekerTime();
+      fadeVerse();
       // check for if the entered timecode is within our estimated time.
-      time_codes_arr[current_verse] = current_time;
-      match_time_for_verse( time_codes_arr[current_verse]);
-      //updateTimeCodesContainer();
-      // updateProgressBar();
+      saveTimeCode(current_time);
       $('.editing_verse').html("Editing: "+(current_verse + 2));
       last_jumped_verse = current_verse + 1;
-      $('#ver_'+current_verse).removeClass('highlight').addClass('normal');
+      removeWarning();
       if(!completed_all_section) { highlight_next_verse(); }// it increase current_verse by 1
       if(completed_all_section) {
         playOrPauseAudio();
-        // $('#edit_mode_message span').html("Click another verse to redo or last verse to continue.");
-        console.log(current_verse);
-        $('#ver_' + current_verse).removeClass('warning_error');
-        if($('.warning_error').length < 1){
+        if($('.inconsistent_error').length < 1){
           // cycle the warning message
           displayWarningWithPercentageWrong('edit');
-          showModalBox();
+          showModalBox($('#warning_container').text());
         }
       }
     }
@@ -1295,7 +1314,7 @@
       // keep track of last jumped verse
       last_jumped_verse = current_verse;
       // jump seeker to the particular verse and play verse
-      $("#jquery_jplayer").jPlayer("playHead", gotToTimeSnap(time_codes_arr[current_verse - 1] || 0));
+      movePlayerHeadToPreviousHead()
       $("#jquery_jplayer").jPlayer("play");
 
       //while editing if worker clicks the last verse do nothing
@@ -1307,6 +1326,14 @@
         $('#verse_'+current_verse + " img").show();
       }
     });
+
+    function movePlayerHeadToPreviousHead () {
+      if(iteration > 1)
+        $("#jquery_jplayer").jPlayer("playHead", gotToTimeSnap(time_codes_arr2[current_verse - 1] || 0));
+      else
+        $("#jquery_jplayer").jPlayer("playHead", gotToTimeSnap(time_codes_arr1[current_verse - 1] || 0));
+      // body...
+    }
 
 
     // highlight the next section/verse when a heart is clicked in edit mode.
@@ -1329,6 +1356,14 @@
 
     // move heart to next section after the heart is clicked.
     function move_heart () {
+      current_time = getSeekerTime();
+      fadeVerse();
+      if( $(".jp-pause").css('display') == 'none' ) {
+        alert("We think you clicked heart before playing audio. For your ease we are playing the audio. Now continue.");
+        start_again();
+        $("#jquery_jplayer").jPlayer("play");
+        return false;
+      }
       $('#verse_icon').die('click');
       // when in edit mode worker doesn't click the edit heart but continues to click on the normal mode heart.
       // continue in normal mode.
@@ -1336,12 +1371,11 @@
         current_verse = last_verse;
         $('.edit_icon').hide();
       }
-      current_time = getSeekerTime();
       $("#jquery_jplayer").jPlayer("pause");
       if(current_verse < verse_in_array.length - 1){
         mode = "normal";
-        time_codes_arr[current_verse] = current_time;
-        match_time_for_verse(current_time);
+        saveTimeCode(current_time);
+        //match_time_for_verse(current_time);
         current_verse += 1;
         last_verse = current_verse;
         $("#bible_chapter").append("<span id ='ver_container_"+current_verse+"' class='verse_container'><span id='ver_"+current_verse+"' class='verse'>"+verse_in_array[current_verse] + "</span><span class='icon_container' id='verse_"+current_verse+"' /></span>");
@@ -1351,33 +1385,31 @@
         next_verse();
         updateProgressBar(current_verse, false);
       }else{
+        saveTimeCode(current_time); // we dont need the last timecode be its needed for screwup message
+        //match_time_for_verse(current_time);
         // worker completed timecoding all sections
         $('#ver_'+current_verse).removeClass('highlight').addClass("normal");
         $('#verse_'+current_verse + ' img').hide();
-        // if(!completed_all_section) { current_verse += 1;}
         updateProgressBar(current_verse, true);
         completed_all_section = true;
         window.clearTimeout(time_out);
-        $('#verse_icon').live('click', move_heart);
-        //set clicked_randomly variable randomlyClicked function
-        randomlyClicked();
-        if(clicked_randomly){
-          displayScrewUpMessage();
+        $('#verse_icon').live('click', click_heart);
+        if(randomlyClicked()){
+          showModalBox("OOps! It looks like you screwed up. Try Again.");
+          start_again();
         }else{
-          if(completed_all_section)
-            displayWarningWithPercentageWrong("normal");
-          else
-            displayWarningWithPercentageWrong("edit");
+          if (iteration > 1) {
+            // analyze two time code array
+            analyzeTimeCodes();
+          }else{
+            // second iteration
+            showModalBox("Now the same work one more time.");
+            iteration += 1;
+            // reset the worker form so that worker can work on it again.
+            start_again();
+          }
         }
 
-        // condition whether to start_again or not
-        $(document).bind('close.facebox', function() {
-          if(clicked_randomly)
-            start_again();
-          else
-            hideModalBox();
-        });
-        showModalBox();
       }
     }
 
@@ -1386,30 +1418,39 @@
       return time;
     }
 
-    function showModalBox () {
-      jQuery.facebox($('#warning_container').text());
+    function showModalBox (text) {
+      jQuery.facebox(text);
     }
 
     function hideModalBox () {
       $('#facebox').hide();
     }
 
-    function displayScrewUpMessage (argument) {
-      $('#warning_container').html("OOps! It looks like you screwed up. Try Again.");
-    }
 
     function randomlyClicked () {
-      index = current_verse - 1;
-      last_entered_timecode = time_codes_arr[index];
+      last_entered_timecode = lastEnteredTimeCode();
       audio_length = $('#jquery_jplayer').data("jPlayer").status.duration;
-      if(((last_entered_timecode/audio_length)*100) < 80){
-        clicked_randomly = true;
-        return true;
+      worked_percent = last_entered_timecode/audio_length *100;
+      if( worked_percent < 80){
+        // if there are too few verses like 2 or 1 than increase the limit of percentage of work performed      
+               if((verse_in_array.length  <= 5) && (worked_percent > 60)){
+                  clicked_randomly = false;
+               }else{
+                   clicked_randomly = true;
+                 }
       }
       else{
         clicked_randomly = false;
-        return false;
       }
+      return clicked_randomly;
+    }
+
+    function lastEnteredTimeCode () {
+      if(iteration > 1)
+        time_code = time_codes_arr2[time_codes_arr2.length - 1];
+      else
+        time_code = time_codes_arr1[time_codes_arr1.length - 1];
+        return time_code
     }
 
     //display warning message after the worker completes all sections wrt the worng timecodes according to our estimates
@@ -1423,25 +1464,21 @@
             $('.estimation_error').addClass("warning_error");
             if (percentage_wrong < 5){
               $('#warning_container').html("Our calculations indicate "+ estimated_wrong_num +" possible mistakes. Check the highlighted sections above and if you are <b>confident you are correct</b> (our calculations are just estimates) please continue and click <b>I'm done</b>.");
-              $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+              enableFormSubmission();
             }else{
               $('#warning_container').html("Our calculations indicate "+ estimated_wrong_num + " possible mistakes. Please click the highlighted sections above to redo them.");
             }
           }else{
-            //set warning message accordingly for edit mode
-            // if (percentage_wrong < 20){
-            //   $('#warning_container').html("Our calculations indicate "+ estimated_wrong_num +" possible mistakes. Check the highlighted sections above and if you are confident you are correct (our calculations are just estimates) please continue and click 'I'm Done'");
-            //   $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
-            // }else{
-            //   $('#warning_container').html("Our calculations indicate "+ estimated_wrong_num +" possible mistakes. Please click the highlighted sections above to redo them.");
-            // }
             $('#warning_container').html("Thank you for doing the task. Please click <b>I'm done</b> to continue.");
             $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
           }
         }else{
           //enable submit button
           $('#warning_container').html("Congratulations!!! you have completed your task. Please click <b>I'm done</b> to continue.");
-          $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+           $('#submit_btn').live(this.replaceWith(submit_button));
+          
+           //$('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+          
         }
       }
     }
@@ -1461,43 +1498,47 @@
       $("#verse_"+(current_verse-1)+" img").fadeOut();
       // $("#verse_"+(current_verse-1)+" img").replaceWith( "<img src ='checkbox.png' id='done_"+current_verse+"' />" );
       $("#verse_"+current_verse).append(icon_html);
-      $('#verse_icon').live('click', move_heart);
+      $('#verse_icon').live('click', click_heart);
       // start playing the audio again
       $("#jquery_jplayer").jPlayer("play");
     }
 
     function check_move_time(){
       if(current_verse > 0){
-        console.log("aayo");
         audio_time = getSeekerTime();
-        max_idel_time = calculate_max_move_time();
-        if (audio_time >= max_idel_time){
+        // max_idel_time = calculate_max_move_time();
+        if (audio_time >= estimatedTimeForVerseNumber(current_verse)){
           disp_idle_confirm();
         }
       }
       if((mode == "normal") || (!completed_all_section && mode == "edit")) {
-        time_out = window.setTimeout(check_move_time,4000);
+        time_out = window.setTimeout(check_move_time,2000);
       }
 
     }
 
-    function calculate_max_move_time(){
-      max_time = 0;
+    function previousTimeCode () {
       if(mode == 'normal'){
-        max_time = time_codes_arr[last_verse - 1] || 0;
+        time = (iteration > 1 ? time_codes_arr2[last_verse - 1] : time_codes_arr1[last_verse - 1]) || 0;
       }else{
-        max_time = time_codes_arr[current_verse - 1 ] || 0;
+        time = (iteration > 1 ? time_codes_arr2[current_verse - 1] : time_codes_arr1[current_verse - 1]) || 0;
       }
+      return time;
+    }
+
+    function estimatedTimeForVerseNumber(){
+      max_time = 0;
+      max_time = previousTimeCode();
       max_time += estimate_time_for_each_verse(current_verse); // get estimated time for currently played section
-      max_time += 5 // added 3 sec so as to show the popup if worker didn't click the heart where he is supposed to
+      max_time += 3 // added 5 sec so as to show the popup if worker didn't click the heart where he is supposed to
       return max_time;
     }
+
 
     // calculate the estimation time for current section/verse
     function estimate_time_for_each_verse(index){
       words_in_verse = wordCount(index)
-      estimated_time = words_in_verse*average_word_per_second;
-      // console.log("verse="+verse+":words=" + words_in_verse);
+      estimated_time = words_in_verse*ulimit;
       return estimated_time;
     }
 
@@ -1505,59 +1546,9 @@
       return jQuery.trim(verse_in_array[index]).split(' ').length;
     }
 
-    //time_taken is the current_time of seeker of the player
-    function match_time_for_verse(time_taken){
-      // console.log(current_verse);
-      estimated_time = estimate_time_for_each_verse(current_verse);
-      time_taken_in_sec = time_taken;
-      store_estimated_time_of_verse(estimated_time);
-      if(lies_within_estimation_v2()){
-        $('#ver_'+parseInt(current_verse)).removeClass("estimation_error").addClass("normal");
-        if (completed_all_section) { $('#ver_'+parseInt(current_verse)).removeClass("warning_error") };
-      }else{
-        $('#ver_'+parseInt(current_verse)).removeClass('highlight').addClass('normal')
-        if(current_verse > 0){ $('#ver_'+parseInt(current_verse)).addClass('estimation_error');}
-        if (completed_all_section) { $('#ver_'+parseInt(current_verse)).addClass("warning_error") };
-      }
-    }
-
-    // store worker entered timecode for future reference while editing
-    function store_estimated_time_of_verse(estimated_time){
-      estimation_arr[current_verse] =  estimated_time;
-    }
-
-    // checks if the entered timecode lies within our estimation
-    function lies_within_estimation(){
-      ulimit = estimation_arr[current_verse] + 3;
-      llimit = estimation_arr[current_verse] - 3;
-      real_time_for_cur_verse = time_codes_arr[current_verse] - (time_codes_arr[current_verse - 1] || 0);
-
-      if( real_time_for_cur_verse >= llimit && real_time_for_cur_verse <= ulimit ){
-        console.log("It lies between:" + ulimit + " and " + llimit + "we got :" + real_time_for_cur_verse);
-        return true;
-      }else{
-        console.log("Must be between:" + ulimit + " and " + llimit + "but got :" + real_time_for_cur_verse);
-        return false;
-      }
-    }
-
-    function lies_within_estimation_v2 () {
-      word_cnt = wordCount(current_verse);
-      upper_limit = Math.ceil(word_cnt * ulimit);
-      lower_limit = Math.floor(word_cnt * llimit);
-      real_time_for_cur_verse = time_codes_arr[current_verse] - (time_codes_arr[current_verse - 1] || 0);
-
-      if( real_time_for_cur_verse >= lower_limit && real_time_for_cur_verse <= upper_limit ){
-        console.log("Verse No. "+ current_verse +" Correct. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit + " words in verse :" + word_cnt + " worker entered time:" + real_time_for_cur_verse + " time per word::" + (real_time_for_cur_verse/word_cnt) );
-        return true;
-      }else{
-        console.log("Verse No. "+ current_verse +" Incorrect. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit + " words in verse :" + word_cnt + " worker entered time:" + real_time_for_cur_verse + " time per word::" + (real_time_for_cur_verse/word_cnt) );
-        return false;
-      }
-    }
-
     // redo timecoding
     $('#reset_form').live("click", function(){
+      $('#submit_btn').replaceWith(submit_img);
       disp_reset_confirm();
     });
 
@@ -1572,7 +1563,7 @@
       $("#jquery_jplayer").jPlayer("pause");
       var r=confirm("We think you missed to click the heart. Please click 'OK' to resume from the last section.");
       if (r==true) {
-        $("#jquery_jplayer").jPlayer("playHead", gotToTimeSnap(time_codes_arr[current_verse - 1] || 0));
+        movePlayerHeadToPreviousHead();
         $("#jquery_jplayer").jPlayer("play");
       }
       else{
@@ -1583,9 +1574,9 @@
 
     // reset the window and initiate all variable again
     function start_again(){
+      var inconsistent_editing = false;
       verse_num = 1;
       current_verse = 0;
-      time_codes_arr = [];
       last_verse = null;
       total_estimated_time = 0;
       mode = "normal";
@@ -1599,10 +1590,9 @@
       $('#countdown').html(verse_in_array.length);
       $("#bible_chapter").html("");
       $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
-      $('#edit_mode_message span').html("Your window get reset. Now try again...");
-      $('#edit_mode_message span').effect("highlight", {}, 1200).fadeOut();
       clicked_randomly = false;
-      time_out = window.setTimeout(check_move_time,4000);
+      stopAudio();
+      time_out = window.setTimeout(check_move_time,2000);
     }
     // function for Jpalyers
     function playOrPauseAudio() {
@@ -1654,34 +1644,80 @@
       $("#jquery_jplayer").jPlayer("volume", $('#jquery_jplayer').data("jPlayer").status.volume + 0.1);
     }
 
-    function scrollToBottom(id){
+    function scrollToBottom(id) {
       document.getElementById(id).scrollTop=document.getElementById(id).scrollHeight
     }
 
-    function test_worker_time_code (codes) {
-      mode = "edit";
-      $("#bible_chapter").html("");
-      time_codes_arr = codes.split(",");
-      for(var i= 0; i<= time_codes_arr.length - 1;  i++){
-        $("#bible_chapter").append("<span id ='ver_container_"+i+"' class='verse_container'><span class='normal verse ' id = 'ver_"+i+"'>"+ verse_in_array[i] + "</span><span class='icon_container' id='verse_"+i+"'>"+icon_html+"</span></span>");
-      }
-
-      last_verse = time_codes_arr.length - 1;
-      window.clearTimeout(time_out);
-      $("#jquery_jplayer").jPlayer("play");
-      time_out = window.setTimeout(move_to_next_section,4000);
-
-    }
-
-    function move_to_next_section () {
-      if(current_verse <= last_verse){
-        move_next_previous('next');
-        time_out = window.setTimeout(move_to_next_section,4000);
+    function saveTimeCode(current_time) {
+      if (iteration > 1){
+        time_codes_arr2[current_verse] = current_time;
       }else{
-        window.clearTimeout(time_out)
+        time_codes_arr1[current_verse] = current_time;
       }
-
-
     }
-    // Note mp3 is not playing in firefox; use oga format
+
+    function analyzeTimeCodes () {
+      inconsistent_error_present = false;
+      if(time_codes_arr1.length ==  time_codes_arr2.length){
+        $.each(time_codes_arr1, function(index, value) {
+          if(Math.abs(time_codes_arr1[index] - time_codes_arr2[index]) > consistency_threshold) {
+            $('#ver_'+index).removeClass('normal').addClass("inconsistent_error");
+            inconsistent_error_present = true;
+          }
+        });
+        if(!inconsistent_error_present){
+          getMeanTimeCodes();
+          enableFormSubmission();
+          showModalBox("Wow.. your clicking of heart seems to be consistent. Please click I'm done to submit your answer.");
+        }else{
+          showModalBox("Some of the heart clicks are inconsistent. Please redo them.");
+          inconsistent_editing = true;
+        }
+      }
+    }
+
+    function removeWarning(){
+      $('#ver_'+current_verse).removeClass("inconsistent_error").removeClass("highlight").removeClass("warning_error").addClass("normal");
+    }
+
+    function fadeVerse(){
+      $('#ver_'+current_verse).removeClass("highlight").addClass("normal");
+    }
+
+    function saveConsistentValue () {
+      $('#ver_container_'+current_verse + " img").hide();
+
+      time = getSeekerTime();
+      pass = wrongTimeCodeIteration(time);
+      if(pass ==1){
+        time_codes_arr1[current_verse] = time;
+      }else if(pass == 2){
+        time_codes_arr2[current_verse] = time;
+      }
+      // recheck if there are any inconsistent time codes.
+      if($(".inconsistent_error").length < 1){
+        analyzeTimeCodes();
+      }
+    }
+
+    function wrongTimeCodeIteration (time) {
+      diff1 = Math.abs(time_codes_arr1[current_verse] - time);
+      diff2 = Math.abs(time_codes_arr2[current_verse] - time);
+      if(diff1 > diff2){
+        return 1;
+      }else{
+        return 2;
+      }
+    }
+
+    function getMeanTimeCodes () {
+      $.each(time_codes_arr1, function(index, value) {
+        timecodes_to_submit[index] = (time_codes_arr1[index]+ time_codes_arr2[index])/2;
+      });
+    }
+
+    function enableFormSubmission () {
+     // $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+     $('#submit_btn').replaceWith(submit_button);
+    }
   </script>

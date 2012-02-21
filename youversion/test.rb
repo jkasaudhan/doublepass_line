@@ -23,7 +23,7 @@
 # s = "dfsd,fdsfsdf,dfdsf,sdfdsf,sdf"
 # a = CSV.parse(s)
 # puts a[0][1]
-1.upto(31) do |i|
+1.upto(10) do |i|
 puts "\"kjv\",\"1Sam."+i.to_s+"\",\"kjv.1Sam."+i.to_s+"\""
 end
 

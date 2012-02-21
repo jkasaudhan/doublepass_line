@@ -5,7 +5,7 @@
 # See example lines at http://cloudfactory.com/developers/lines/
 # Run `cf login` OR manually specify your API key below (See http://cloudfactory.com/developers/resources/account.html)
 # api_key: fill_in_your_api_key #(optional)
-title: timecoding-doublepass_5
+title: timecoding-doublepass_6
 public: false # Make your line a public line if true (http://cloudfactory.com/developers/resources/line.html#public)
 #api_key: 5f27b0c87532ff8389fd4955b88b6336c579b529 #0cff92505889e9530baebda027459e1ce073e9dd
 description: A sample line generated via CLI to use both standard and custom form for video transcription.
@@ -27,7 +27,7 @@ stations:
       worker:
         worker_type: human
         num_workers: 1
-        reward: 12
+        reward: 20
       custom_task_form:
         form_title: Listen to audio, read along and then click when each sentence ends.
         instruction: Play this simple game by listening to some audio while reading along at the same time. You need to click the heart icon immediately when the audio plays the word before it. Help us timecode the audio, it is simple and fun!

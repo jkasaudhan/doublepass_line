@@ -12,13 +12,13 @@
 
 <div id = "instruction_text" style="display:none">
   <h2>Instructions</h2>
-  <p><b>Play the audio and click on the heart icon immediately after the audio plays the word before it.</b></p>
-  <p>Be as precise as possible. If you think you clicked on a heart mistakenly, click the corresponding section to start the audio from the same position.</p>
-  <p>When all hearts are clicked on correctly, the task is repeated again.</p>
-  <p>When you <b>complete your second round</b>, you can click on the <b>"I'm Done"</b> button to submit your task.</p>
-  <p><b>We require you to do the same work twice because it gives us accurate values of the audio timecodes that we are recording while you click on the hearts.</b></p>
-  <p><b>Hot keys:</b></p>
-  <p>CLick heart => Enter</p>
+  <p><b>Play the audio, read along and then click on the hearts immediately after the speaker reads the word before it.</b></p>
+  <p>If you think you clicked on a heart mistakenly, click on the corresponding sentence to correct it.</p>
+  <p>We are using this information to time code our audio.So, for accuracy, we require you to <b>do the same task twice.</b></p>
+  <p> After you complete your second round, Please click on the "I'm Done" button to submit your task.</p>
+  <p> Try to <b>be as precise as possible</b> both time. Otherwise, it might <b>take you longer to complete this task.</b></p>
+  <p><b>Keyboard shortcuts:</b></p>
+  <p>Click heart => Enter</p>
   <p>Play/pause => p</p>
 </div>
 <div id = "wrapper">
@@ -31,7 +31,7 @@
       <div id = "bible_chapter" style="overflow:scroll;background:#fff">
 
       </div>
-      <input type = "submit" id = "submit_button" value = "I'm Done!" class='disable' disabled='disabled' />
+      <div id="submit_btn"><img src="http://i.imgur.com/lndH3.png" title="I'm done" alt="I'm Done" /></div>
       <input type = "button" id = "step_back" value = 'One Step Back' class='btn-blue' style="float: right;" />
       <input type = "reset" id = "reset_form" value = 'Try Again' class='btn-blue' style="float: right;" />
     </form>
@@ -195,7 +195,11 @@
       font-size: 20px;
       padding-left: 10px;
     }
-
+    
+    
+    #submit_btn{
+      float: left;    
+    }
 
     /*
     * Skin for jPlayer Plugin (jQuery JavaScript Library)
@@ -1084,6 +1088,8 @@
     var current_verse = 0;
     var icon_html = "<img class='verse_icon' src='http://youversion.s3.amazonaws.com/heart.jpeg' id='verse_icon' \>";
     var edit_html = "<img class='edit_icon' src='http://youversion.s3.amazonaws.com/heart.jpeg' id='edit_icon' \>";
+    var submit_button =  "<div id=\"submit_btn\"><input type = \"submit\" id = \"submit_button\" value = \"I'm Done!\" class='btn-blue' /></div>";
+    var submit_img = "<div id=\"submit_btn\"><img src=\"http://i.imgur.com/lndH3.png\" title=\"I'm done\" alt=\"I\'m Done\" /></div>";
     var inconsistent_editing = false;
     var consistency_threshold = 0.6;
     var iteration = 1;
@@ -1148,6 +1154,7 @@
           warningAlerts: false
         });
         //get chapter from json object
+       
         chapter_html = response['response']['data']['0']['data']['request']['content'];
         plane_text = $('.verse', chapter_html).text();
         plane_text = plane_text.replace(/(s*[0-9]+)/gi, '**');
@@ -1156,7 +1163,7 @@
         // populate first verse with icon at the end
         $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
 
-        time_out = window.setTimeout(check_move_time,4000);
+        //time_out = window.setTimeout(check_move_time,4000);
         $('#countdown').html((verse_in_array.length));
         $('a[rel*=facebox]').facebox();
 
@@ -1211,15 +1218,18 @@
       move_next_previous("prev");
       $('#edit_mode_message span').html("You have moved one step back.");
       $('#edit_mode_message span').effect("highlight", {}, 1200).fadeOut();
+      $('#submit_btn').replaceWith(submit_img);
       $("#jquery_jplayer").jPlayer("play");
     });
 
     function click_heart () {
+      window.clearTimeout(time_out);
       if(mode == "normal") {
         if(inconsistent_editing){
           removeWarning();
           saveConsistentValue();
         }else{
+          time_out = window.setTimeout(check_move_time,2000);
           move_heart();
         }
 
@@ -1230,6 +1240,7 @@
           // control will only enter here if worker finishes the same work twice
           saveConsistentValue();
         }else{
+          time_out = window.setTimeout(check_move_time,2000);
           click_edit_heart();
         }
       }
@@ -1382,7 +1393,7 @@
         updateProgressBar(current_verse, true);
         completed_all_section = true;
         window.clearTimeout(time_out);
-        $('#verse_icon').live('click', move_heart);
+        $('#verse_icon').live('click', click_heart);
         if(randomlyClicked()){
           showModalBox("OOps! It looks like you screwed up. Try Again.");
           start_again();
@@ -1419,13 +1430,19 @@
     function randomlyClicked () {
       last_entered_timecode = lastEnteredTimeCode();
       audio_length = $('#jquery_jplayer').data("jPlayer").status.duration;
-      if(((last_entered_timecode/audio_length)*100) < 80){
-        clicked_randomly = true;
+      worked_percent = last_entered_timecode/audio_length *100;
+      if( worked_percent < 80){
+        // if there are too few verses like 2 or 1 than increase the limit of percentage of work performed      
+               if((verse_in_array.length  <= 5) && (worked_percent > 60)){
+                  clicked_randomly = false;
+               }else{
+                   clicked_randomly = true;
+                 }
       }
       else{
         clicked_randomly = false;
       }
-      return clicked_randomly
+      return clicked_randomly;
     }
 
     function lastEnteredTimeCode () {
@@ -1458,7 +1475,10 @@
         }else{
           //enable submit button
           $('#warning_container').html("Congratulations!!! you have completed your task. Please click <b>I'm done</b> to continue.");
-          $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+           $('#submit_btn').live(this.replaceWith(submit_button));
+          
+           //$('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+          
         }
       }
     }
@@ -1478,7 +1498,7 @@
       $("#verse_"+(current_verse-1)+" img").fadeOut();
       // $("#verse_"+(current_verse-1)+" img").replaceWith( "<img src ='checkbox.png' id='done_"+current_verse+"' />" );
       $("#verse_"+current_verse).append(icon_html);
-      $('#verse_icon').live('click', move_heart);
+      $('#verse_icon').live('click', click_heart);
       // start playing the audio again
       $("#jquery_jplayer").jPlayer("play");
     }
@@ -1518,7 +1538,7 @@
     // calculate the estimation time for current section/verse
     function estimate_time_for_each_verse(index){
       words_in_verse = wordCount(index)
-      estimated_time = words_in_verse*average_word_per_second;
+      estimated_time = words_in_verse*ulimit;
       return estimated_time;
     }
 
@@ -1528,6 +1548,7 @@
 
     // redo timecoding
     $('#reset_form').live("click", function(){
+      $('#submit_btn').replaceWith(submit_img);
       disp_reset_confirm();
     });
 
@@ -1696,6 +1717,7 @@
     }
 
     function enableFormSubmission () {
-      $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+     // $('#submit_button').removeAttr('disabled').removeClass('disable').addClass('btn-blue');
+     $('#submit_btn').replaceWith(submit_button);
     }
   </script>
