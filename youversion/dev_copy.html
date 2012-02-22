@@ -8,6 +8,7 @@
 <script type="text/javascript" src="http://cloudfactory-transcription.s3.amazonaws.com/javascripts/jquery.hotkeys.js"></script>
 <script src="http://youversion.s3.amazonaws.com/lightbox.js" type="text/javascript"></script>
 
+<div id="super">
 <div id="overlay"></div>
 
 <div id = "instruction_text" style="display:none">
@@ -61,6 +62,68 @@
   <div id='warning_container' style = "display:none"></div>
   <div id="fade"></div>
 </div>
+
+<div class="test">
+  <fieldset>
+    <legend>TimeCode Test</legend>
+      <div id="input">
+      <label for="metadata">MetaData</label>
+      <input type="text" id="metadata" value="" name="metadata"/>
+      <input type="button" id="load" value="LOAD" />
+      </div>
+      <div id="output">
+      <label for="timecode">Time Codes</label>
+      <textarea id="timecode" name="timecode"></textarea>
+      <input type="button" id="show" value="SHOW" />
+      </div>
+  </fieldset>
+</div>
+<div> Timer </div>
+<div id="timer">
+</div>
+</div>
+
+
+
+
+
+  <!-- test stylesheets -->
+  <style>
+  
+    #super{
+      width: 820 px;
+      margin: 0 auto;
+    }
+  
+    .test{
+      width: 820px;
+      height: 200px;
+      margin: 0 auto;
+      float: left;
+      background-color: #66A3D2;
+      border-radius: 15px;
+    }
+    
+    fieldset {
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    }
+    
+    #timecode{
+      width:400px;
+      height:80px;
+    }
+    #input{
+      width: 800px;
+    }
+    
+    #output{
+      margin-top: 20px;
+      width: 800px;
+    }
+  
+  </style>
   <!-- stylesheets -->
   <style>
     body {
@@ -1098,50 +1161,57 @@
     var audio_url = "";
     var clicked_randomly = false;
     var every_thing_is_all_right = false;
+    var spanish_bias = 4;
+    var spanish_ulimit = .8;
+    
+    
 
     $(document).ready(function(){
-      urlToSend = "http://sprout-technology.com/clients/youversion/api_call_dev.php?chapter=Rev.12&translation=kjv";
-      var xmlhttp = false;
-      if (window.XMLHttpRequest)
-      {// code for IE7+, Firefox, Chrome, Opera, Safari
-          xmlhttp=new XMLHttpRequest();
-          xmlhttp.open("GET",urlToSend,false);
-          xmlhttp.send();
-      }
-      else
-      {// code for IE6, IE5
-          xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-          xmlhttp.open("POST",urlToSend,false);
-          // Do not send null for ActiveX
-          xmlhttp.send();
-      }
-      //alert("xmlhttp.responseText : " + xmlhttp.responseText);
-      console.log(xmlhttp.responseText);
-
-
-
-      // $.ajax({
-      //   url: "http://sprout-technology.com/clients/youversion/api_call_dev.php?chapter=Josh.2&translation=kjv",
-      //   dataType: "json",
-      //   success: function(response){
-      //     if(response['response']['data']['errors']){
-      //       every_thing_is_all_right = false;
-      //       $('#submit_button').remove();
-      //       alert("Some error occured while preparing this hit. Please do not accept this hit. And please kindly inform this problem to the requester");
-      //     }else{
-      //       every_thing_is_all_right = true;
-      //       preparePlayerWithAudioAndText(response);
-      //     }
-      //   },
-      //   error: function(data){
-      //     alert("Sorry could not contact the vendor for audio and text. Please do not accept the hit.");
-      //   }
-      // });
 
       // for debugging jplayer
       // $("#jplayer_inspector").jPlayerInspector({jPlayer:$("#jquery_jplayer")});
+      
     });
     // end of document load
+    
+    
+    
+    function loadurl(chapter,version){
+      
+      $.ajax({
+        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=" + chapter + "&translation=" + version,
+        dataType: "json",
+        success: function(response){
+          if(response['response']['data']['errors']){
+            every_thing_is_all_right = false;
+            $('#submit_button').remove();
+            alert("Some error occured while preparing this hit. Please do not accept this hit. And please kindly inform this problem to the requester");
+          }else{
+            every_thing_is_all_right = true;
+            preparePlayerWithAudioAndText(response);
+          }
+        },
+        error: function(data){
+          alert("Sorry could not contact the vendor for audio and text. Please do not accept the hit.");
+        }
+      });
+      
+    }
+    
+    $('#load').click(function(){
+      metadata = $('#metadata').val().split(".")
+      version = metadata[0];
+      chapter = metadata[1] + "." + metadata[2];
+      loadurl(chapter,version)
+    });
+    
+    $('#show').click(function(){
+      $('#timecode').val('"0,' + time_codes_arr.toString() + '"');
+    });
+    
+    function showtimer(){
+      $('#timer').html($("#jquery_jplayer").data().jPlayer.status.currentTime);
+    }
 
     function preparePlayerWithAudioAndText(response){
       if(response['response']['data']['0']['data']['request']['audio']){
@@ -1160,6 +1230,8 @@
           errorAlerts: true,
           warningAlerts: false
         });
+        $("#jquery_jplayer").bind($.jPlayer.event.timeupdate,showtimer);
+        
         //get chapter from json object
         chapter_html = response['response']['data']['0']['data']['request']['content'];
         plane_text = $('.verse', chapter_html).text();
@@ -1192,8 +1264,6 @@
 
     // put time codes to the hidden feild as the outputs
     $('#youversion_form').submit(function() {
-      time_codes.pop();
-      time_codes.unshift(0.000000);
       time_codes = time_codes_arr.join(",");
       $('#timecodes_to_submit').val(time_codes);
       return true;
@@ -1369,7 +1439,6 @@
         $('#ver_'+current_verse).removeClass('highlight').addClass("normal");
         $('#verse_'+current_verse + ' img').hide();
         // if(!completed_all_section) { current_verse += 1;}
-        time_codes_arr[current_verse] = current_time;
         updateProgressBar(current_verse, true);
         completed_all_section = true;
         window.clearTimeout(time_out);
@@ -1414,7 +1483,8 @@
     }
 
     function randomlyClicked () {
-      last_entered_timecode = time_codes_arr[time_codes_arr.length - 1];
+      index = current_verse - 1;
+      last_entered_timecode = time_codes_arr[index];
       audio_length = $('#jquery_jplayer').data("jPlayer").status.duration;
       if(((last_entered_timecode/audio_length)*100) < 80){
         clicked_randomly = true;
@@ -1510,7 +1580,8 @@
     // calculate the estimation time for current section/verse
     function estimate_time_for_each_verse(index){
       words_in_verse = wordCount(index)
-      estimated_time = words_in_verse*average_word_per_second;
+      // estimated_time = words_in_verse*average_word_per_second;
+      estimated_time = words_in_verse*spanish_ulimit;
       // console.log("verse="+verse+":words=" + words_in_verse);
       return estimated_time;
     }
@@ -1559,13 +1630,19 @@
       word_cnt = wordCount(current_verse);
       upper_limit = Math.ceil(word_cnt * ulimit);
       lower_limit = Math.floor(word_cnt * llimit);
+      ul_abs = (time_codes_arr[current_verse - 1] || 0) + upper_limit;
+      ll_abs = (time_codes_arr[current_verse - 1] || 0) + lower_limit;
+      
       real_time_for_cur_verse = time_codes_arr[current_verse] - (time_codes_arr[current_verse - 1] || 0);
 
       if( real_time_for_cur_verse >= lower_limit && real_time_for_cur_verse <= upper_limit ){
-        console.log("Verse No. "+ current_verse +" Correct. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit + " words in verse :" + word_cnt + " worker entered time:" + real_time_for_cur_verse + " time per word::" + (real_time_for_cur_verse/word_cnt) );
+        // console.log("Verse No. "+ current_verse +" Correct. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit + " words in verse :" + word_cnt + " worker entered time:" + real_time_for_cur_verse + " time per word::" + (real_time_for_cur_verse/word_cnt) );
+        
+        console.log("Correct--------(" + ll_abs + ")--------" + (time_codes_arr[current_verse] - ll_abs) + "--------(" + time_codes_arr[current_verse] + ")--------" + (ul_abs - time_codes_arr[current_verse]) + "--------(" + ul_abs + ")" + "\t\t\t" + (upper_limit - lower_limit));
         return true;
       }else{
-        console.log("Verse No. "+ current_verse +" Incorrect. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit + " words in verse :" + word_cnt + " worker entered time:" + real_time_for_cur_verse + " time per word::" + (real_time_for_cur_verse/word_cnt) );
+        // console.log("Verse No. "+ current_verse +" Incorrect. Upperlimit:" + upper_limit + " and Lowerlimit:" + lower_limit + " words in verse :" + word_cnt + " worker entered time:" + real_time_for_cur_verse + " time per word::" + (real_time_for_cur_verse/word_cnt) );
+        console.log("Incorrect--------(" + ll_abs + ")--------" + (time_codes_arr[current_verse] - ll_abs) + "--------(" + time_codes_arr[current_verse] + ")--------" + (ul_abs - time_codes_arr[current_verse]) + "--------(" + ul_abs + ")" + "\t\t\t" + (upper_limit - lower_limit));
         return false;
       }
     }

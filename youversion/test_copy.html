@@ -1096,7 +1096,7 @@
     var timecodes_to_submit = [];
     var time_codes_arr1 = [];
     var time_codes_arr2 = [];
-    var average_word_per_second = 0.35;
+    var average_time_per_word = 0.35;
     var last_verse = null;
     var total_estimated_time = 0;
     var mode = "normal";
@@ -1114,7 +1114,7 @@
 
     $(document).ready(function(){
       $.ajax({
-        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=Rev.15&translation=rvr60-es",
+        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=Matt.3&translation=rvr60-es",
         dataType: "json",
         success: function(response){
           if(response['response']['data']['errors']){
@@ -1223,6 +1223,10 @@
     });
 
     function click_heart () {
+      diff = (getSeekerTime() - (time_codes_arr1[current_verse-1] || 0));
+      len = verse_in_array[current_verse].replace(/ $/,'').split(' ').length;
+      console.log(">>> diff --- " + diff + "----  Count -------" + len  + "-----Time/Word------" + diff/len );
+      
       window.clearTimeout(time_out);
       if(mode == "normal") {
         if(inconsistent_editing){
