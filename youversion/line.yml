@@ -43,7 +43,17 @@ stations:
               Lev.12
           expected_output:
             time_codes:
-              value: "<% time_codes.length < 4 %>"
+              value: "<%  values = [21.825153350830078, 42.600669860839844, 63.98529815673828, 84.4875259399414, 96.17679595947266, 112.72499084472656, 126.58674621582031, 143.16542053222656];
+                          if time_codes.length == values.length
+                            values.each_with_index do |val, i|
+                              if (val-time_codes[i]).abs > 1
+                                return false
+                              end
+                            end
+                            return true
+                          end
+                          return false %>"
+              #[21.825153350830078, 42.600669860839844, 63.98529815673828, 84.4875259399414, 96.17679595947266, 112.72499084472656, 126.58674621582031, 143.16542053222656] 
       badges:
         - name: Spanish TimeCoder Badge
           description: A badge that that make you url extractor
