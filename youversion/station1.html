@@ -36,7 +36,7 @@
       <input type = "reset" id = "reset_form" value = 'Try Again' class='btn-blue' style="float: right;" />
     </form>
 
-    <span id= "current_progress">Remaining <span id='countdown'></span></span>
+    <span id= "current_progress">Remaining <span id='countdown-versecode'></span></span>
     <div id="progress" style="border:1px solid;"><span id ="bar"></span></div>
   </div>
 
@@ -1021,9 +1021,14 @@
 
     #facebox table {
       margin: auto;
+      width: auto !important;
       border-collapse: collapse;
     }
-
+    
+    #facebox table tr, #facebox table td{
+      padding: 0 !important;
+      border: none !important;
+    }
     #facebox .body {
       padding: 10px;
       background: #fff;
@@ -1065,7 +1070,7 @@
       color:#fff;
     }
 
-    #countdown {
+    #countdown-versecode {
       display: inline-block;
       font-size: 30px;
       margin-left: 10px;
@@ -1075,6 +1080,10 @@
 
     #facebox p{
       margin: 10px 0;
+    }
+    
+    .content{
+      padding : 10px;
     }
   </style>
 
@@ -1166,7 +1175,7 @@
         $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
 
         //time_out = window.setTimeout(check_move_time,4000);
-        $('#countdown').html((verse_in_array.length));
+        $('#countdown-versecode').html((verse_in_array.length));
         $('a[rel*=facebox]').facebox();
 
         //hot keys for jplayer
@@ -1491,7 +1500,7 @@
       total_length = verse_in_array.length;
       height = ((index)/(total_length))*100;
       $('#bar').css("height",height+'%');
-      $('#countdown').html(total_length - index);
+      $('#countdown-versecode').html(total_length - index);
     }
 
     // move the icon to the next verse and start playing audio again
@@ -1589,7 +1598,7 @@
       $("#jquery_jplayer").jPlayer("stop");
       $("#jquery_jplayer").jPlayer("play");
       $('#bar').css("height",'0%');
-      $('#countdown').html(verse_in_array.length);
+      $('#countdown-versecode').html(verse_in_array.length);
       $("#bible_chapter").html("");
       $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
       clicked_randomly = false;
