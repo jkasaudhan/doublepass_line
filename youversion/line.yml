@@ -27,28 +27,28 @@ stations:
       worker:
         worker_type: human
         num_workers: 1
-        reward: 5
+        reward: 15
       custom_task_form:
         form_title: Listen to audio, read along and then click when each sentence ends.
         instruction: Play this simple game by listening to some audio while reading along at the same time. You need to click the heart icon immediately when the audio plays the word before it. Help us timecode the audio, it is simple and fun!
         html: station1.html
       gold_standards:
-        - name: youversion-timecoding-spanish
+        - name: youversion-spanish-timecoding
           assignment_duration: 86399
           input:
             translation:
-              kjv
+              rvr60-es
             chapter:
-              Rev.15
+              1John.1
           expected_output:
             time_codes:
-              value: "<% flag = false; worker_codes = time_codes.split(',').each { |i| i.strip! }; values = [0, 13.497716903686523, 28.130136489868164, 40.574867248535156, 51.57926940917969, 57.46506881713867, 66.42031860351562, 75.49910736083984]; if worker_codes.length == values.length; values.each_with_index do |val, i|; if (val-worker_codes[i].to_f).abs > 1; flag=false; break;  else; flag = true;  end; end; else; flag = false; end; output = flag %>"
+              value: "<% flag = false; worker_codes = time_codes.split(',').each { |i| i.strip! }; values = [0,24.86672019958496, 39.5163688659668, 57.31829071044922, 63.66972732543945, 80.007568359375, 90.28455352783203, 104.53147888183594, 114.86673736572266, 126.46446990966797]; if worker_codes.length == values.length; values.each_with_index do |val, i|; if (val-worker_codes[i].to_f).abs > 1; flag=false; break;  else; flag = true;  end; end; else; flag = false; end; output = flag %>"
       badges:
-        - name: Spanish TimeCoder Badge
-          description: A badge that that make you url extractor
+        - name: Spanish Timecoder Badge
+          description: This badge makes you eligible to perform spanish verse time coding tasks.
           max_badges: 10000
           gold_standards:
-            - youversion-timecoding-spanish
+            - youversion-spanish-timecoding
           test_attributes:
             type: default
             retries: 3
@@ -56,6 +56,6 @@ stations:
             check_manually: false
              form_attributes:
               title: "Spanish TimeCoding Test"
-              instruction: Test form for Spanish TimeCoder Badge
+              instruction: Play this simple game by listening to some audio while reading along at the same time. You need to click the heart icon immediately when the audio plays the word before it. Help us timecode the audio, it is simple and fun!
               type: "CustomTaskForm"
               file: test_copy.html

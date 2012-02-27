@@ -12,7 +12,7 @@
 
 <div id = "instruction_text" style="display:none">
   <h2>Instructions</h2>
-  <p><b>Spanish TimeCoder Badge</b></p>
+  <p><b>Play the audio, read along and then click on the hearts immediately after the speaker reads the word before it.</b></p>
   <p>If you think you clicked on a heart mistakenly, click on the corresponding sentence to correct it.</p>
   <p>We are using this information to time code our audio.So, for accuracy, we require you to <b>do the same task twice.</b></p>
   <p> After you complete your second round, Please click on the "I'm Done" button to submit your task.</p>
@@ -23,7 +23,7 @@
 </div>
 <div id = "wrapper">
   <div id = "trascription_area" class="all_rounded_corners">
-    <div style="color:#fff;font-size:20px"> Spanish TimeCoder Badge <a id='show_instruction' href="#instruction_text" rel="facebox"><img src='http://youversion.s3.amazonaws.com/help.png' alt='View instructions' style='margin-bottom: -8px;' /></a></div>
+    <div style="color:#fff;font-size:20px">Play the audio and click on the red heart icon when the audio reaches the word right before it. <a id='show_instruction' href="#instruction_text" rel="facebox"><img src='http://youversion.s3.amazonaws.com/help.png' alt='View instructions' style='margin-bottom: -8px;' /></a></div>
 
     <div id="edit_mode_message"><span></span></div>
     <form id ="youversion_form">
@@ -36,7 +36,7 @@
       <input type = "reset" id = "reset_form" value = 'Try Again' class='btn-blue' style="float: right;" />
     </form>
 
-    <span id= "current_progress">Remaining <span id='countdown'></span></span>
+    <span id= "current_progress">Remaining <span id='countdown-versecode'></span></span>
     <div id="progress" style="border:1px solid;"><span id ="bar"></span></div>
   </div>
 
@@ -1025,11 +1025,10 @@
       border-collapse: collapse;
     }
     
-    #facebox table tr{
+    #facebox table tr, #facebox table td{
       padding: 0 !important;
       border: none !important;
     }
-
     #facebox .body {
       padding: 10px;
       background: #fff;
@@ -1071,7 +1070,7 @@
       color:#fff;
     }
 
-    #countdown {
+    #countdown-versecode {
       display: inline-block;
       font-size: 30px;
       margin-left: 10px;
@@ -1081,6 +1080,10 @@
 
     #facebox p{
       margin: 10px 0;
+    }
+    
+    .content{
+      padding : 10px;
     }
   </style>
 
@@ -1122,7 +1125,7 @@
 
 //    $(document).ready(function(){
       $.ajax({
-        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=Rev.15&translation=kjv",
+        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=1John.1&translation=rvr60-es",
         dataType: "json",
         success: function(response){
           if(response['response']['data']['errors']){
@@ -1172,7 +1175,7 @@
         $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
 
         //time_out = window.setTimeout(check_move_time,4000);
-        $('#countdown').html((verse_in_array.length));
+        $('#countdown-versecode').html((verse_in_array.length));
         $('a[rel*=facebox]').facebox();
 
         //hot keys for jplayer
@@ -1497,7 +1500,7 @@
       total_length = verse_in_array.length;
       height = ((index)/(total_length))*100;
       $('#bar').css("height",height+'%');
-      $('#countdown').html(total_length - index);
+      $('#countdown-versecode').html(total_length - index);
     }
 
     // move the icon to the next verse and start playing audio again
@@ -1595,7 +1598,7 @@
       $("#jquery_jplayer").jPlayer("stop");
       $("#jquery_jplayer").jPlayer("play");
       $('#bar').css("height",'0%');
-      $('#countdown').html(verse_in_array.length);
+      $('#countdown-versecode').html(verse_in_array.length);
       $("#bible_chapter").html("");
       $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
       clicked_randomly = false;
