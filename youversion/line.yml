@@ -42,16 +42,7 @@ stations:
               Rev.15
           expected_output:
             time_codes:
-              value: "<%  values = [13.505049705505371, 28.07526397705078, 40.543548583984375, 51.569576263427734, 57.22391891479492, 66.56085968017578, 75.47666931152344, 87.51717376708984]
-                          if time_codes.length == values.length
-                            values.each_with_index do |val, i|
-                              if (val-time_codes[i]).abs > 1
-                                return false
-                              end
-                            end
-                            return true
-                          end
-                          return false %>"
+              value: "<% flag = false; worker_codes = time_codes.split(',').each { |i| i.strip! }; values = [0, 13.497716903686523, 28.130136489868164, 40.574867248535156, 51.57926940917969, 57.46506881713867, 66.42031860351562, 75.49910736083984]; if worker_codes.length == values.length; values.each_with_index do |val, i|; if (val-worker_codes[i].to_f).abs > 1; flag=false; break;  else; flag = true;  end; end; else; flag = false; end; output = flag %>"
       badges:
         - name: Spanish TimeCoder Badge
           description: A badge that that make you url extractor
@@ -60,6 +51,11 @@ stations:
             - youversion-timecoding-spanish
           test_attributes:
             type: default
-            retries: 5
+            retries: 3
             pass_percentage: 100
             check_manually: false
+             form_attributes:
+              title: "Spanish TimeCoding Test"
+              instruction: Test form for Spanish TimeCoder Badge
+              type: "CustomTaskForm"
+              file: test_copy.html

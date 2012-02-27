@@ -12,7 +12,7 @@
 
 <div id = "instruction_text" style="display:none">
   <h2>Instructions</h2>
-  <p><b>Play the audio, read along and then click on the hearts immediately after the speaker reads the word before it.</b></p>
+  <p><b>Spanish TimeCoder Badge</b></p>
   <p>If you think you clicked on a heart mistakenly, click on the corresponding sentence to correct it.</p>
   <p>We are using this information to time code our audio.So, for accuracy, we require you to <b>do the same task twice.</b></p>
   <p> After you complete your second round, Please click on the "I'm Done" button to submit your task.</p>
@@ -23,7 +23,7 @@
 </div>
 <div id = "wrapper">
   <div id = "trascription_area" class="all_rounded_corners">
-    <div style="color:#fff;font-size:20px">Play the audio and click on the red heart icon when the audio reaches the word right before it. <a id='show_instruction' href="#instruction_text" rel="facebox"><img src='http://youversion.s3.amazonaws.com/help.png' alt='View instructions' style='margin-bottom: -8px;' /></a></div>
+    <div style="color:#fff;font-size:20px"> Spanish TimeCoder Badge <a id='show_instruction' href="#instruction_text" rel="facebox1"><img src='http://youversion.s3.amazonaws.com/help.png' alt='View instructions' style='margin-bottom: -8px;' /></a></div>
 
     <div id="edit_mode_message"><span></span></div>
     <form id ="youversion_form">
@@ -1096,7 +1096,7 @@
     var timecodes_to_submit = [];
     var time_codes_arr1 = [];
     var time_codes_arr2 = [];
-    var average_time_per_word = 0.35;
+    var average_word_per_second = 0.35;
     var last_verse = null;
     var total_estimated_time = 0;
     var mode = "normal";
@@ -1111,10 +1111,12 @@
     var audio_url = "";
     var clicked_randomly = false;
     var every_thing_is_all_right = false;
+    var spanish_bias = 4;
+    var spanish_ulimit = .8;
 
-    $(document).ready(function(){
+//    $(document).ready(function(){
       $.ajax({
-        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=Matt.3&translation=rvr60-es",
+        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter={{chapter}}&translation={{translation}}",
         dataType: "json",
         success: function(response){
           if(response['response']['data']['errors']){
@@ -1133,7 +1135,7 @@
 
       // for debugging jplayer
       // $("#jplayer_inspector").jPlayerInspector({jPlayer:$("#jquery_jplayer")});
-    });
+//    });
     // end of document load
 
     function preparePlayerWithAudioAndText(response){
@@ -1165,7 +1167,7 @@
 
         //time_out = window.setTimeout(check_move_time,4000);
         $('#countdown').html((verse_in_array.length));
-        $('a[rel*=facebox]').facebox();
+        $('a[rel*=facebox1]').facebox();
 
         //hot keys for jplayer
         play_pause = 'p';
@@ -1223,10 +1225,6 @@
     });
 
     function click_heart () {
-      diff = (getSeekerTime() - (time_codes_arr1[current_verse-1] || 0));
-      len = verse_in_array[current_verse].replace(/ $/,'').split(' ').length;
-      console.log(">>> diff --- " + diff + "----  Count -------" + len  + "-----Time/Word------" + diff/len );
-      
       window.clearTimeout(time_out);
       if(mode == "normal") {
         if(inconsistent_editing){
@@ -1542,7 +1540,7 @@
     // calculate the estimation time for current section/verse
     function estimate_time_for_each_verse(index){
       words_in_verse = wordCount(index)
-      estimated_time = words_in_verse*ulimit;
+      estimated_time = words_in_verse*spanish_ulimit + spanish_bias;
       return estimated_time;
     }
 
