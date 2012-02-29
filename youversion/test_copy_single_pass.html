@@ -13,8 +13,8 @@
   <h2>Instructions</h2>
   <p><b>Play the audio, read along and then click on the hearts immediately after the speaker reads the word before it.</b></p>
   <p>If you think you clicked on a heart mistakenly, click on the corresponding sentence to correct it.</p>
-  <p>We are using this information to time code our audio. So for accuracy,<b>multiple people are working on this task.</b></p>
-  <p>So, make sure that you click on the hearts precisely. Otherwise,<b>your work might get rejected if it doesn't match with majority of other workers.</b></p>
+  <p>We are using this information to test your time coding skills in <b>spanish</b>.</p>
+  <p>So, make sure that you click on the hearts precisely.</b></p>
   <p>After you click on all hearts correctly, please click on the "I'm Done" button to submit your task.</p>
   <p><b>Keyboard shortcuts:</b></p>
   <p>Click heart => Enter</p>
@@ -35,7 +35,7 @@
       <input type = "reset" id = "reset_form" value = 'Try Again' class='btn-blue' style="float: right;" />
     </form>
 
-    <span id= "current_progress">Remaining <span id='countdown'></span></span>
+    <span id= "current_progress">Remaining <span id='countdown-versecode'></span></span>
     <div id="progress" style="border:1px solid;"><span id ="bar"></span></div>
   </div>
 
@@ -1020,6 +1020,17 @@
       margin: auto;
       border-collapse: collapse;
     }
+    
+    #facebox table {
+      margin: auto;
+      width: auto !important;
+      border-collapse: collapse;
+    }
+    
+    #facebox table tr, #facebox table td{
+      padding: 0 !important;
+      border: none !important;
+    }
 
     #facebox .body {
       padding: 10px;
@@ -1062,7 +1073,7 @@
       color:#fff;
     }
 
-    #countdown {
+    #countdown-versecode {
       display: inline-block;
       font-size: 30px;
       margin-left: 10px;
@@ -1109,9 +1120,9 @@
     var clicked_randomly = false;
     var every_thing_is_all_right = false;
 
-    $(document).ready(function(){
+//    $(document).ready(function(){
       $.ajax({
-        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=1John.1&translation=rvr60-es",
+        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter={{chapter}}&translation={{translation}}",
         dataType: "json",
         success: function(response){
           if(response['response']['data']['errors']){
@@ -1130,7 +1141,7 @@
 
       // for debugging jplayer
       // $("#jplayer_inspector").jPlayerInspector({jPlayer:$("#jquery_jplayer")});
-    });
+//    });
     // end of document load
 
     function preparePlayerWithAudioAndText(response){
@@ -1160,7 +1171,7 @@
         $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
 
         time_out = window.setTimeout(check_move_time,4000);
-        $('#countdown').html((verse_in_array.length));
+        $('#countdown-versecode').html((verse_in_array.length));
         $('a[rel*=facebox]').facebox();
 
         //hot keys for jplayer
@@ -1469,7 +1480,7 @@
       total_length = verse_in_array.length;
       height = ((index)/(total_length))*100;
       $('#bar').css("height",height+'%');
-      $('#countdown').html(total_length - index);
+      $('#countdown-versecode').html(total_length - index);
     }
 
     // move the icon to the next verse and start playing audio again
@@ -1614,7 +1625,7 @@
       $("#jquery_jplayer").jPlayer("stop");
       $("#jquery_jplayer").jPlayer("play");
       $('#bar').css("height",'0%');
-      $('#countdown').html(verse_in_array.length);
+      $('#countdown-versecode').html(verse_in_array.length);
       $("#bible_chapter").html("");
       $("#bible_chapter").append("<span id ='ver_container_0' class='verse_container'><span class='highlight verse ' id = 'ver_0'>"+ verse_in_array[0] + "</span><span class='icon_container' id='verse_"+current_verse+"'>"+icon_html+"</span></span>");
       clicked_randomly = false;

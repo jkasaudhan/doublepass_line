@@ -54,6 +54,11 @@ stations:
             retries: 3
             pass_percentage: 100
             check_manually: false
+            form_attributes:
+              title: Listen to audio, read along and then click when each sentence ends (Spanish).
+              instruction: Play this simple game by listening to some audio while reading along at the same time. You need to click the heart icon immediately when the audio plays the word before it. Help us timecode the audio, it is simple and fun!
+              type: "CustomTaskForm"
+              file: "test_copy_single_pass.html"
 output_formats:
   station_0:
      - name: translation
