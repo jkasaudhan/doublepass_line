@@ -1112,7 +1112,7 @@
     var last_jumped_verse;
     var completed_all_section = false;
     var max_idel_time = 0;
-    var ulimit = 0.65;
+    var ulimit = 0.95;
     var llimit = 0.25;
     var last_verse = 0;
     var time_out;
@@ -1122,7 +1122,8 @@
 
 //    $(document).ready(function(){
       $.ajax({
-        url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter={{chapter}}&translation={{translation}}",
+                url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter={{chapter}}&translation={{translation}}",
+        //url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter={{chapter}}&translation={{translation}}",
         dataType: "json",
         success: function(response){
           if(response['response']['data']['errors']){
@@ -1556,15 +1557,15 @@
 
     // checks if the entered timecode lies within our estimation
     function lies_within_estimation(){
-      ulimit = estimation_arr[current_verse] + 3;
-      llimit = estimation_arr[current_verse] - 3;
+      upper_limit = estimation_arr[current_verse] + 3;
+      lower_limit = estimation_arr[current_verse] - 3;
       real_time_for_cur_verse = timecodes_to_submit[current_verse] - (timecodes_to_submit[current_verse - 1] || 0);
 
-      if( real_time_for_cur_verse >= llimit && real_time_for_cur_verse <= ulimit ){
-        console.log("It lies between:" + ulimit + " and " + llimit + "we got :" + real_time_for_cur_verse);
+      if( real_time_for_cur_verse >= lower_limit && real_time_for_cur_verse <= upper_limit ){
+        console.log("It lies between:" + upper_limit + " and " + lower_limit + "we got :" + real_time_for_cur_verse);
         return true;
       }else{
-        console.log("Must be between:" + ulimit + " and " + llimit + "but got :" + real_time_for_cur_verse);
+        console.log("Must be between:" + upper_limit + " and " + lower_limit + "but got :" + real_time_for_cur_verse);
         return false;
       }
     }
