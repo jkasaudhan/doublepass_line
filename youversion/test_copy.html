@@ -3,7 +3,6 @@
 <link href='http://fonts.googleapis.com/css?family=Original+Surfer' rel='stylesheet' type='text/css'>
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
-<script type="text/javascript" src="http://youversion.s3.amazonaws.com/jquery.unobtrusive.ajax.js"></script>
 <script src="http://www.jplayer.org/latest/js/jquery.jplayer.min.js" type="text/javascript" charset="utf-8"></script>
 <script type="text/javascript" src="http://cloudfactory-transcription.s3.amazonaws.com/javascripts/jquery.hotkeys.js"></script>
 <script src="http://youversion.s3.amazonaws.com/lightbox.js" type="text/javascript"></script>
@@ -1122,12 +1121,15 @@
     var every_thing_is_all_right = false;
     var spanish_bias = 4;
     var spanish_ulimit = .8;
+    var response_object = "";
 
 //    $(document).ready(function(){
+       console.log ("-------------------------------- BEFORE AJAX ------------------------------")
       $.ajax({
         url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=1John.1&translation=rvr60-es",
         dataType: "json",
         success: function(response){
+          console.log ("-------- ajax response success ---------");
           if(response['response']['data']['errors']){
             every_thing_is_all_right = false;
             $('#submit_button').remove();
@@ -1138,9 +1140,17 @@
           }
         },
         error: function(data){
+          console.log ("-------- ajax response failure ---------" + data);
+          response_object = data;
           alert("Sorry could not contact the vendor for audio and text. Please do not accept the hit.");
         }
       });
+      // 
+      // $.ajax({
+      //   url: "http://www.google.com.np",
+      //   success: function (response){ console.log("----> On Success ----")},
+      //   error: function (response){ console.log("----> On Failure ----")},
+      // });
 
       // for debugging jplayer
       // $("#jplayer_inspector").jPlayerInspector({jPlayer:$("#jquery_jplayer")});

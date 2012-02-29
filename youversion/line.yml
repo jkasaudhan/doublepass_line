@@ -5,7 +5,7 @@
 # See example lines at http://cloudfactory.com/developers/lines/
 # Run `cf login` OR manually specify your API key below (See http://cloudfactory.com/developers/resources/account.html)
 # api_key: fill_in_your_api_key #(optional)
-title: spanish-verse-timecoding-with-badge
+title: spanish-verse-timecoding
 worker_pool: mturk
 public: false # Make your line a public line if true (http://cloudfactory.com/developers/resources/line.html#public)
 #api_key: 5f27b0c87532ff8389fd4955b88b6336c579b529 #0cff92505889e9530baebda027459e1ce073e9dd
@@ -29,11 +29,11 @@ stations:
         num_workers: 1
         reward: 15
       custom_task_form:
-        form_title: Listen to audio, read along and then click when each sentence ends.
+        form_title: Listen to audio, read along and then click when each sentence ends (Spanish).
         instruction: Play this simple game by listening to some audio while reading along at the same time. You need to click the heart icon immediately when the audio plays the word before it. Help us timecode the audio, it is simple and fun!
         html: station1.html
       gold_standards:
-        - name: youversion-spanish-timecoding
+        - name: youversion-timecoding-spanish
           assignment_duration: 86399
           input:
             translation:
@@ -48,14 +48,15 @@ stations:
           description: This badge makes you eligible to perform spanish verse time coding tasks.
           max_badges: 10000
           gold_standards:
-            - youversion-spanish-timecoding
+            - youversion-timecoding-spanish
           test_attributes:
             type: default
             retries: 3
             pass_percentage: 100
             check_manually: false
-             form_attributes:
-              title: "Spanish TimeCoding Test"
-              instruction: Play this simple game by listening to some audio while reading along at the same time. You need to click the heart icon immediately when the audio plays the word before it. Help us timecode the audio, it is simple and fun!
-              type: "CustomTaskForm"
-              file: test_copy.html
+output_formats:
+  station_0:
+     - name: translation
+     - name: chapter
+  station_1:
+     - name: time_codes
