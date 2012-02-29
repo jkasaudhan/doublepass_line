@@ -1084,6 +1084,11 @@
     #facebox p{
       margin: 10px 0;
     }
+    
+    #instruction_text{
+      padding : 0 10px;
+    }
+    
   </style>
 
   <script>
@@ -1122,7 +1127,7 @@
 
 //    $(document).ready(function(){
       $.ajax({
-                url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter={{chapter}}&translation={{translation}}",
+                url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter=Rev.15&translation=rvr60-es",
         //url: "http://sprout-technology.com/clients/youversion/api_call.php?chapter={{chapter}}&translation={{translation}}",
         dataType: "json",
         success: function(response){
