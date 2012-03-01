@@ -5,7 +5,7 @@
 # See example lines at http://cloudfactory.com/developers/lines/
 # Run `cf login` OR manually specify your API key below (See http://cloudfactory.com/developers/resources/account.html)
 # api_key: fill_in_your_api_key #(optional)
-title: spanish-verse-timecoding
+title: youversion-timecoding-spanish-2
 worker_pool: mturk
 public: false # Make your line a public line if true (http://cloudfactory.com/developers/resources/line.html#public)
 #api_key: 5f27b0c87532ff8389fd4955b88b6336c579b529 #0cff92505889e9530baebda027459e1ce073e9dd
@@ -33,7 +33,7 @@ stations:
         instruction: Play this simple game by listening to some audio while reading along at the same time. You need to click the heart icon immediately when the audio plays the word before it. Help us timecode the audio, it is simple and fun!
         html: station1.html
       gold_standards:
-        - name: youversion-timecoding-spanish
+        - name: youversion-timecoding-spanish-gs-2
           assignment_duration: 86399
           input:
             translation:
@@ -44,11 +44,11 @@ stations:
             time_codes:
               value: "<% flag = false; worker_codes = time_codes.split(',').each { |i| i.strip! }; values = [0,24.86672019958496, 39.5163688659668, 57.31829071044922, 63.66972732543945, 80.007568359375, 90.28455352783203, 104.53147888183594, 114.86673736572266, 126.46446990966797]; if worker_codes.length == values.length; values.each_with_index do |val, i|; if (val-worker_codes[i].to_f).abs > 1; flag=false; break;  else; flag = true;  end; end; else; flag = false; end; output = flag %>"
       badges:
-        - name: Spanish Timecoder Badge
+        - name: Youversion Timecoding Spanish Badge 2
           description: This badge makes you eligible to perform spanish verse time coding tasks.
           max_badges: 10000
           gold_standards:
-            - youversion-timecoding-spanish
+            - youversion-timecoding-spanish-gs-2
           test_attributes:
             type: default
             retries: 3
