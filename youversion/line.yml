@@ -19,6 +19,9 @@ input_formats:
   - name: chapter
     required: true
     valid_type:
+  - name: factor
+    required: true
+    valid_type:
 
 stations:
   - station:
@@ -27,7 +30,7 @@ stations:
       worker:
         worker_type: human
         num_workers: 1
-        reward: 12
+        reward: "2 *{{ factor }}"
       custom_task_form:
         form_title: Listen to audio, read along and then click when each sentence ends.
         instruction: Play this simple game by listening to some audio while reading along at the same time. You need to click the heart icon immediately when the audio plays the word before it. Help us timecode the audio, it is simple and fun!
