@@ -1100,7 +1100,7 @@
     var submit_button =  "<div id=\"submit_btn\"><input type = \"submit\" id = \"submit_button\" value = \"I'm Done!\" class='btn-blue' /></div>";
     var submit_img = "<div id=\"submit_btn\"><img src=\"http://i.imgur.com/lndH3.png\" title=\"I'm done\" alt=\"I\'m Done\" /></div>";
     var inconsistent_editing = false;
-    var consistency_threshold = 0.6;
+    var consistency_threshold = .8;
     var iteration = 1;
     var timecodes_to_submit = [];
     var time_codes_arr1 = [];
@@ -1517,9 +1517,9 @@
       if(current_verse > 0){
         audio_time = getSeekerTime();
         // max_idel_time = calculate_max_move_time();
-        if (audio_time >= estimatedTimeForVerseNumber(current_verse)){
-          disp_idle_confirm();
-        }
+        // if (audio_time >= estimatedTimeForVerseNumber(current_verse)){
+        //   disp_idle_confirm();
+        // }
       }
       if((mode == "normal") || (!completed_all_section && mode == "edit")) {
         time_out = window.setTimeout(check_move_time,2000);
