@@ -27,9 +27,9 @@ stations:
       worker:
         worker_type: human
         num_workers: 5
-        reward: 10
+        reward: 100
       custom_task_form:
-        form_title: 听音频，陪读，然后按一下每个句子结束时（中国）。
+        form_title: 高收入，需要填写吧。 听音频，陪读，然后按一下每个句子结束时（中国）。
         instruction: Play this simple game by listening to some audio while reading along at the same time. You need to click the heart icon immediately when the audio plays the word before it. Help us timecode the audio, it is simple and fun!
         html: station1.html
 output_formats:

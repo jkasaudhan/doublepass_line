@@ -1105,7 +1105,7 @@
     var timecodes_to_submit = [];
     var time_codes_arr1 = [];
     var time_codes_arr2 = [];
-    var average_word_per_second = 0.95;
+    var average_word_per_second = 2;
     var last_verse = null;
     var total_estimated_time = 0;
     var mode = "normal";
@@ -1113,15 +1113,14 @@
     var last_jumped_verse;
     var completed_all_section = false;
     var max_idel_time = 0;
-    var ulimit = 0.95;
-    var llimit = 0.15;
+    var ulimit = 2;
+    var llimit = 0.01;
     var last_verse = 0;
     var time_out;
     var audio_url = "";
     var clicked_randomly = false;
     var every_thing_is_all_right = false;
-    var spanish_bias = 4;
-    var spanish_ulimit = .8;
+
 
 //    $(document).ready(function(){
       $.ajax({
@@ -1549,7 +1548,7 @@
     // calculate the estimation time for current section/verse
     function estimate_time_for_each_verse(index){
       words_in_verse = wordCount(index)
-      estimated_time = words_in_verse*spanish_ulimit + spanish_bias;
+      estimated_time = words_in_verse*ulimit;
       return estimated_time;
     }
 
